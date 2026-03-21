@@ -24,9 +24,6 @@ COLORS = {
     "pituitary":  "#E9C46A",
 }
 
-# ─────────────────────────────────────────────
-# FEATURE EXTRACTION FUNCTIONS
-# ─────────────────────────────────────────────
 
 def load_image_gray(filepath, size=IMG_SIZE):
     """Load image as normalized grayscale numpy array [0,1]."""
@@ -101,9 +98,6 @@ def extract_glcm_features(img):
         features.extend([values.mean(), values.std()])
     return np.array(features)
 
-# ─────────────────────────────────────────────
-# PICK ONE SAMPLE IMAGE PER CLASS FOR VISUALIZATION
-# ─────────────────────────────────────────────
 
 def get_sample_image(cls):
     """Return path to first available image in a class folder."""
@@ -113,9 +107,6 @@ def get_sample_image(cls):
         raise FileNotFoundError(f"No images found in {cls_path}")
     return images[0]
 
-# ─────────────────────────────────────────────
-# PLOT 1: HOG VISUALIZATION per class
-# ─────────────────────────────────────────────
 print("Generating HOG visualization...")
 fig, axes = plt.subplots(2, 4, figsize=(16, 8))
 fig.suptitle("HOG Feature Visualization — Shape & Edge Detection per Class",
@@ -151,9 +142,7 @@ plt.savefig(OUTPUT_DIR / "hog_visualization.png", dpi=150, bbox_inches='tight')
 plt.close()
 print("  [SAVED] hog_visualization.png")
 
-# ─────────────────────────────────────────────
-# PLOT 2: LBP VISUALIZATION per class
-# ─────────────────────────────────────────────
+
 print("Generating LBP visualization...")
 fig, axes = plt.subplots(3, 4, figsize=(16, 12))
 fig.suptitle("LBP Feature Visualization — Local Texture Patterns per Class",
@@ -198,9 +187,6 @@ plt.savefig(OUTPUT_DIR / "lbp_visualization.png", dpi=150, bbox_inches='tight')
 plt.close()
 print("  [SAVED] lbp_visualization.png")
 
-# ─────────────────────────────────────────────
-# PLOT 3: INTENSITY STATISTICS per class
-# ─────────────────────────────────────────────
 print("Generating intensity statistics visualization...")
 
 # Collect stats for all 4 classes
@@ -261,9 +247,6 @@ plt.savefig(OUTPUT_DIR / "intensity_stats.png", dpi=150, bbox_inches='tight')
 plt.close()
 print("  [SAVED] intensity_stats.png")
 
-# ─────────────────────────────────────────────
-# PLOT 4: GLCM PROPERTIES per class
-# ─────────────────────────────────────────────
 print("Generating GLCM visualization...")
 glcm_props = ['contrast', 'dissimilarity', 'homogeneity', 'energy', 'correlation']
 glcm_data  = {cls: {} for cls in CLASSES}
@@ -304,9 +287,6 @@ plt.savefig(OUTPUT_DIR / "glcm_properties.png", dpi=150, bbox_inches='tight')
 plt.close()
 print("  [SAVED] glcm_properties.png")
 
-# ─────────────────────────────────────────────
-# PLOT 5: COMBINED FEATURE SUMMARY GRID
-# ─────────────────────────────────────────────
 print("Generating combined feature summary...")
 fig, axes = plt.subplots(4, 4, figsize=(18, 18))
 fig.suptitle("Complete Feature Engineering Summary — One Sample per Class",
@@ -365,9 +345,6 @@ plt.savefig(OUTPUT_DIR / "feature_summary_grid.png", dpi=150, bbox_inches='tight
 plt.close()
 print("  [SAVED] feature_summary_grid.png")
 
-# ─────────────────────────────────────────────
-# FEATURE METADATA JSON (replaces .npy files)
-# ─────────────────────────────────────────────
 meta = {
     "classes": CLASSES,
     "label_map": {cls: i for i, cls in enumerate(CLASSES)},
@@ -391,9 +368,6 @@ with open(OUTPUT_DIR / "feature_meta.json", "w") as f:
     json.dump(meta, f, indent=2)
 print("  [SAVED] feature_meta.json")
 
-# ─────────────────────────────────────────────
-# FINAL SUMMARY
-# ─────────────────────────────────────────────
 print("\n" + "="*55)
 print("FEATURE ENGINEERING COMPLETE")
 print("="*55)

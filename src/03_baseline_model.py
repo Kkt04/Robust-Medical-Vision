@@ -1,12 +1,3 @@
-"""
-Phase 1 - Baseline ML Model with Uncertainty Estimation
-Project 5: Robust Medical Vision - Brain Tumor Classification
-
-Models: Random Forest · Calibrated SVM · Logistic Regression
-Uncertainty: Prediction entropy · Max confidence · Brier score
-Outputs: PNG plots only (no pkl, no npy)
-"""
-
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -30,9 +21,6 @@ from sklearn.metrics import (
 import warnings
 warnings.filterwarnings("ignore")
 
-# ─────────────────────────────────────────────
-# CONFIGURATION
-# ─────────────────────────────────────────────
 DATA_DIR   = Path("data/Training")
 OUTPUT_DIR = Path("outputs/models")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -48,9 +36,6 @@ COLORS = {
     "pituitary":  "#E9C46A",
 }
 
-# ─────────────────────────────────────────────
-# STEP 1: FEATURE EXTRACTION (inline, no npy)
-# ─────────────────────────────────────────────
 
 def load_image_gray(filepath, size=IMG_SIZE):
     img = Image.open(filepath).convert("L")
@@ -129,9 +114,6 @@ X = np.nan_to_num(X, nan=0.0, posinf=1.0, neginf=0.0)
 print(f"\n  Feature matrix : {X.shape}")
 print(f"  Label vector   : {y.shape}")
 
-# ─────────────────────────────────────────────
-# STEP 2: PREPROCESSING
-# ─────────────────────────────────────────────
 print("\n" + "=" * 55)
 print("STEP 2: Preprocessing...")
 print("=" * 55)
@@ -153,9 +135,6 @@ X_train, X_val, y_train, y_val   = train_test_split(
 
 print(f"  Train={len(X_train)}, Val={len(X_val)}, Test={len(X_test)}")
 
-# ─────────────────────────────────────────────
-# STEP 3: UNCERTAINTY FUNCTIONS
-# ─────────────────────────────────────────────
 
 def prediction_entropy(proba):
     """
@@ -187,9 +166,6 @@ def uncertainty_report(proba, y_true, threshold=0.7):
         "mean_entropy":       round(prediction_entropy(proba).mean(), 4),
     }
 
-# ─────────────────────────────────────────────
-# STEP 4: DEFINE MODELS
-# ─────────────────────────────────────────────
 models = {
     "Random Forest": RandomForestClassifier(
         n_estimators=200,
@@ -249,9 +225,6 @@ for name, model in models.items():
     print(f"  Uncertainty: {results[name]['unc']}")
     print(classification_report(y_test, y_pred, target_names=CLASSES))
 
-# ─────────────────────────────────────────────
-# PNG 1: CONFUSION MATRICES
-# ─────────────────────────────────────────────
 print("\nSaving PNG outputs...")
 
 fig, axes = plt.subplots(1, 3, figsize=(18, 5))
@@ -274,9 +247,6 @@ plt.savefig(OUTPUT_DIR / "confusion_matrices.png", dpi=150, bbox_inches='tight')
 plt.close()
 print("  [SAVED] confusion_matrices.png")
 
-# ─────────────────────────────────────────────
-# PNG 2: CONFIDENCE DISTRIBUTIONS
-# ─────────────────────────────────────────────
 fig, axes = plt.subplots(1, 3, figsize=(18, 4))
 fig.suptitle("Prediction Confidence Distributions\n"
              "Correct vs Wrong predictions — threshold at 0.70",
@@ -304,9 +274,6 @@ plt.savefig(OUTPUT_DIR / "confidence_distributions.png", dpi=150, bbox_inches='t
 plt.close()
 print("  [SAVED] confidence_distributions.png")
 
-# ─────────────────────────────────────────────
-# PNG 3: RELIABILITY DIAGRAMS (Calibration)
-# ─────────────────────────────────────────────
 fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 fig.suptitle("Reliability Diagrams — Calibration Check\n"
              "Closer to diagonal = better calibrated (Meningioma class shown)",
@@ -335,9 +302,6 @@ plt.savefig(OUTPUT_DIR / "calibration_curves.png", dpi=150, bbox_inches='tight')
 plt.close()
 print("  [SAVED] calibration_curves.png")
 
-# ─────────────────────────────────────────────
-# PNG 4: ENTROPY ANALYSIS
-# ─────────────────────────────────────────────
 fig, axes = plt.subplots(1, 3, figsize=(18, 4))
 fig.suptitle("Prediction Entropy (Uncertainty) Analysis\n"
              "Wrong predictions should have higher entropy — validates uncertainty signal",
@@ -369,9 +333,6 @@ plt.savefig(OUTPUT_DIR / "entropy_analysis.png", dpi=150, bbox_inches='tight')
 plt.close()
 print("  [SAVED] entropy_analysis.png")
 
-# ─────────────────────────────────────────────
-# PNG 5: MODEL COMPARISON BAR CHART
-# ─────────────────────────────────────────────
 model_names = list(results.keys())
 metrics     = {
     "Accuracy":       [r["accuracy"]            for r in results.values()],
@@ -410,9 +371,6 @@ plt.savefig(OUTPUT_DIR / "model_comparison_chart.png", dpi=150, bbox_inches='tig
 plt.close()
 print("  [SAVED] model_comparison_chart.png")
 
-# ─────────────────────────────────────────────
-# PNG 6: PER-CLASS F1 HEATMAP
-# ─────────────────────────────────────────────
 f1_data = []
 for name, res in results.items():
     report = classification_report(
@@ -524,9 +482,6 @@ plt.savefig(OUTPUT_DIR / "uncertainty_dashboard.png", dpi=150, bbox_inches='tigh
 plt.close()
 print("  [SAVED] uncertainty_dashboard.png")
 
-# ─────────────────────────────────────────────
-# SUMMARY CSV (still useful as text record)
-# ─────────────────────────────────────────────
 summary = pd.DataFrame([{
     "Model":            name,
     "Accuracy":         r["accuracy"],
@@ -542,9 +497,6 @@ summary = pd.DataFrame([{
 
 summary.to_csv(OUTPUT_DIR / "model_comparison.csv", index=False)
 
-# ─────────────────────────────────────────────
-# FINAL SUMMARY PRINT
-# ─────────────────────────────────────────────
 print("\n" + "=" * 55)
 print("ALL OUTPUTS SAVED")
 print("=" * 55)
