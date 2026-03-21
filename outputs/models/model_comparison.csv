@@ -1,0 +1,4 @@
+Model,Accuracy,Macro F1,Brier Score,Mean Confidence,Mean Entropy,High-Conf Acc,Low-Conf Acc
+Random Forest,0.9125,0.9121,0.0425,0.7722,0.6381,0.9739,0.7803
+SVM (Calibrated),0.9384,0.9381,0.0269,0.8987,0.3163,0.9569,0.6842
+Logistic Regression,0.9018,0.9014,0.0408,0.9641,0.09,0.9199,0.4894

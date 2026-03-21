@@ -1,0 +1,16 @@
+{
+  "classes": [
+    "glioma",
+    "meningioma",
+    "notumor",
+    "pituitary"
+  ],
+  "label_map": {
+    "glioma": 0,
+    "meningioma": 1,
+    "notumor": 2,
+    "pituitary": 3
+  },
+  "feature_dim": 1810,
+  "n_samples": 5600
+}
