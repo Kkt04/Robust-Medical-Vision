@@ -1,4 +1,4 @@
-# Project 5: Robust Medical Vision
+# Robust Medical Vision
 ## Brain Tumor MRI Classification with Uncertainty Estimation
 
 ### Problem Statement
