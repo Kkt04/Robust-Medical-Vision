@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Robust Medical Vision — Brain Tumor MRI Dashboard</title>
+  <meta name="description"
+    content="Results dashboard for brain tumor MRI classification with uncertainty estimation. Covers EDA, Random Forest (BML), and SVM+PCA (AML) models." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="header-left">
+      <div class="eyebrow">Project 5 &nbsp;·&nbsp; Medical AI</div>
+      <h1>Robust Medical Vision<br>Brain Tumor MRI Dashboard</h1>
+      <p class="subtitle">Kalash Kumari Thakur &nbsp;</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-pill"><span class="dot dot-blue"></span>4 Tumour Classes</div>
+      <div class="stat-pill"><span class="dot dot-orange"></span>~7k MRI Images</div>
+      <div class="stat-pill"><span class="dot dot-green"></span>2 Models Trained</div>
+      <div class="stat-pill"><span class="dot dot-purple"></span>27 Output Plots</div>
+    </div>
+  </header>
+
+  <nav class="tabs-bar" role="tablist" aria-label="Result sections">
+    <button class="tab-btn" data-tab="eda" role="tab" id="tab-eda" aria-controls="section-eda">
+      🔬 Exploratory Analysis <span class="tab-badge">7</span>
+    </button>
+    <button class="tab-btn" data-tab="bml" role="tab" id="tab-bml" aria-controls="section-bml">
+      🌲 Baseline ML <span class="tab-badge">10</span>
+    </button>
+    <button class="tab-btn" data-tab="aml" role="tab" id="tab-aml" aria-controls="section-aml">
+      ⚡ Advanced ML <span class="tab-badge">10</span>
+    </button>
+  </nav>
+
+  <main class="main">
+
+    <section class="tab-section" id="section-eda" role="tabpanel" aria-labelledby="tab-eda">
+      <div class="section-header">
+        <h2><span class="section-icon">🔬</span> Exploratory Data Analysis</h2>
+        <p>Before any model is trained, we analyse the raw dataset — class balance, image dimensions, pixel-intensity
+          statistics, and a data-quality audit — to confirm the pipeline is clean and the feature space is informative.
+        </p>
+      </div>
+
+      <div class="finding-box">
+        <span class="finding-icon">💡</span>
+        <p><strong>Key observation:</strong> The dataset is near-balanced across all four classes, validating accuracy
+          as a fair metric. Meningioma and No-Tumor share overlapping intensity distributions, which explains why they
+          are the hardest pair to separate downstream.</p>
+      </div>
+
+      <div class="grid" id="grid-eda"></div>
+    </section>
+
+    <!-- BML Section -->
+    <section class="tab-section" id="section-bml" role="tabpanel" aria-labelledby="tab-bml">
+      <div class="section-header">
+        <h2><span class="section-icon">🌲</span> Baseline ML — Random Forest</h2>
+        <p>A Random Forest (200 trees, class-balanced) trained on ~370 hand-crafted features: HOG edge descriptors, LBP
+          texture patterns, GLCM co-occurrence stats, and raw intensity statistics. Uncertainty is estimated via Shannon
+          entropy over tree-vote distributions.</p>
+        <div class="model-tag">🧠 Random Forest · 200 trees · balanced weights · ~370-dim feature vector · uncertainty
+          via Shannon entropy</div>
+      </div>
+
+      <div class="results-banner">
+        <h3>Model Performance Snapshot</h3>
+        <div class="metric-item">
+          <div class="m-label">Accuracy</div>
+          <div class="m-val">~85%</div>
+          <div class="m-sub">Test set</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-label">Macro F1</div>
+          <div class="m-val">~0.83</div>
+          <div class="m-sub">All classes</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-label">Brier Score</div>
+          <div class="m-val">~0.08</div>
+          <div class="m-sub">Lower is better</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-label">Features</div>
+          <div class="m-val">~370</div>
+          <div class="m-sub">HOG + LBP + GLCM + Intensity</div>
+        </div>
+      </div>
+
+      <div class="finding-box">
+        <span class="finding-icon">💡</span>
+        <p><strong>Key finding:</strong> Wrong predictions have <strong>significantly higher Shannon entropy</strong>
+          than correct ones — the uncertainty signal is informative and validates the clinical safety flagging
+          mechanism. The model is slightly overconfident per its calibration curve, motivating Platt Scaling in AML.</p>
+      </div>
+
+      <div class="grid" id="grid-bml"></div>
+    </section>
+
+    <section class="tab-section" id="section-aml" role="tabpanel" aria-labelledby="tab-aml">
+      <div class="section-header">
+        <h2><span class="section-icon">⚡</span> Advanced ML — SVM + PCA + Platt Scaling</h2>
+        <p>SVM with RBF kernel (C=10) applied in PCA-compressed space retaining 95% variance. Platt Scaling converts raw
+          SVM scores into calibrated probabilities. The maximum-margin boundary in PCA space resolves the non-linear
+          Glioma ↔ Meningioma boundary that Random Forest struggles with.</p>
+        <div class="model-tag">⚡ SVM · RBF kernel · C=10 · PCA 95% variance · Platt calibration · uncertainty via
+          calibrated entropy</div>
+      </div>
+
+      <div class="results-banner">
+        <h3>Model Performance Snapshot</h3>
+        <div class="metric-item">
+          <div class="m-label">Accuracy</div>
+          <div class="m-val">~87%</div>
+          <div class="m-sub">Test set</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-label">Macro F1</div>
+          <div class="m-val">~0.85</div>
+          <div class="m-sub">All classes</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-label">Brier Score</div>
+          <div class="m-val">~0.09</div>
+          <div class="m-sub">Lower is better</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-label">Improvement</div>
+          <div class="m-val">+2%</div>
+          <div class="m-sub">Over BML accuracy</div>
+        </div>
+      </div>
+
+      <div class="finding-box">
+        <span class="finding-icon">💡</span>
+        <p><strong>Key finding:</strong> Platt-calibrated probabilities are <strong>better aligned with actual
+            accuracy</strong> compared to the Random Forest. AML achieves higher accuracy at the same
+          uncertainty-coverage level — making it a safer clinical decision-support tool. The RBF boundary in PCA-2D
+          visually confirms why SVM outperforms on the Glioma/Meningioma split.</p>
+      </div>
+
+      <div class="grid" id="grid-aml"></div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    Robust Medical Vision &nbsp;·&nbsp; Brain Tumor MRI Classification with Uncertainty Estimation &nbsp;·&nbsp;
+    <span>Kalash Kumari Thakur</span> &nbsp;·&nbsp; Enrollment 230136
+  </footer>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lb-close" id="lb-close" onclick="closeLightbox()" aria-label="Close">&times;</button>
+    <div class="lb-inner">
+      <img id="lb-img" src="" alt="Full size plot" />
+      <div class="lb-caption" id="lb-cap"></div>
+      <div class="lb-subdesc" id="lb-subdesc"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
