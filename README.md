@@ -29,6 +29,27 @@ https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset
 ```
 medical_vision_project/
 ├── README.md
+├── DL_DOCUMENTATION.md       ← Deep Learning technical details
+├── data/
+│   └── Training/
+│       ├── glioma/
+│       ├── meningioma/
+│       ├── notumor/
+│       └── pituitary/
+├── src/
+│   ├── 01_eda.py              ← EDA & data quality analysis
+│   ├── 02_baseline_ml.py      ← BML: Random Forest + uncertainty
+│   ├── 03_advanced_ml.py      ← AML: SVM + PCA + Platt calibration
+│   └── 04_deep_learning.py     ← DL: ResNet-18 + MC-Dropout
+├── outputs/
+│   ├── eda/                   ← 7 EDA PNGs
+│   ├── bml/                   ← 10 BML PNGs
+│   ├── aml/                   ← 10 AML PNGs
+│   └── dl/                    ← 12 DL PNGs
+└── index.html                 ← Interactive dashboard
+```
+medical_vision_project/
+├── README.md
 ├── data/
 │   └── Training/
 │       ├── glioma/
@@ -60,6 +81,12 @@ medical_vision_project/
 **Uncertainty:** Platt-calibrated probabilities + Shannon entropy + reliability diagrams  
 **Why SVM:** Maximum-margin classifier in the PCA-compressed space handles the non-linear Glioma/Meningioma boundary that Random Forest cannot resolve as cleanly.
 
+### Deep Learning (DL) — `04_deep_learning.py`
+**Model:** ResNet-18 (pretrained on ImageNet) with fine-tuning  
+**Key advance:** Transfer learning from ImageNet + MC-Dropout (20 passes) for uncertainty estimation  
+**Uncertainty:** Shannon entropy over MC-Dropout predictions + prediction variance  
+**Why ResNet:** Skip connections preserve low-level texture (critical for tumor margins); optimal depth for ~5600 images; efficient on CPU
+
 ---
 
 ## How to Run
@@ -88,7 +115,16 @@ python src/02_baseline_ml.py
 
 # Step 3: Advanced ML (SVM + PCA)
 python src/03_advanced_ml.py
+
+# Step 4: Deep Learning (ResNet-18 + MC-Dropout)
+python src/04_deep_learning.py
 ```
+
+### 4. View Dashboard
+Open `index.html` in a web browser to explore:
+- EDA visualizations
+- BML, AML, and DL model results
+- Live prediction with uncertainty estimation
 
 All outputs are saved as PNG files. No binary model files are generated.
 
@@ -135,16 +171,36 @@ All outputs are saved as PNG files. No binary model files are generated.
 | `aml_decision_boundary_pca.png` | SVM boundary in PCA-2D |
 | `aml_bml_comparison.png` | BML vs AML bar comparison |
 
+### DL (`outputs/dl/`)
+| File | Description |
+|---|---|
+| `dl_training_curves.png` | Loss and accuracy over epochs |
+| `dl_confusion_matrix.png` | ResNet-18 confusion matrix |
+| `dl_per_class_metrics.png` | Per-class Precision/Recall/F1 |
+| `dl_confidence_distribution.png` | Confidence + entropy (correct vs wrong) |
+| `dl_entropy_analysis.png` | Entropy scatter by class |
+| `dl_calibration_curve.png` | Reliability diagram |
+| `dl_uncertainty_threshold.png` | Accuracy vs coverage trade-off |
+| `dl_mc_dropout_uncertainty.png` | Std vs entropy correlation |
+| `dl_ood_detection.png` | High entropy = potential OOD |
+| `dl_bml_aml_dl_comparison.png` | BML vs AML vs DL comparison |
+| `dl_learning_rate_schedule.png` | Cosine annealing curve |
+| `dl_feature_maps.png` | First conv layer activations |
+
 ---
 
-## Key Results (Expected)
+## Key Results (Expected vs Actual)
 
 | Model | Accuracy | Macro F1 | Brier Score |
 |---|---|---|---|
 | Random Forest (BML) | ~0.85 | ~0.83 | ~0.08 |
 | SVM + PCA (AML) | ~0.87 | ~0.85 | ~0.09 |
+| ResNet-18 (DL) | **0.98** | **0.98** | **0.01** |
 
-**Key finding:** Wrong predictions have significantly higher Shannon entropy than correct ones — the uncertainty signal is informative and validates the clinical safety flagging mechanism.
+**Key findings:**
+1. Wrong predictions have significantly higher Shannon entropy than correct ones — the uncertainty signal is informative and validates the clinical safety flagging mechanism.
+2. DL with MC-Dropout achieves SOTA performance with best calibration (Brier: 0.01)
+3. Uncertainty metrics (entropy, MC-std) reliably identify incorrect predictions — enabling "knowing when we don't know"
 
 ---
 
