@@ -47,9 +47,9 @@ medical_vision_project/
 │   ├── aml/                   ← 10 AML PNGs
 │   └── dl/                    ← 12 DL PNGs
 └── index.html                 ← Interactive dashboard
-
+```
 --- 
-
+```
 
 medical_vision_project/
 ├── README.md
@@ -67,7 +67,7 @@ medical_vision_project/
     ├── eda/                   ← 7 EDA PNGs
     ├── bml/                   ← 10 BML PNGs
     └── aml/                   ← 10 AML PNGs
-
+```
 ---
 
 ## Models
