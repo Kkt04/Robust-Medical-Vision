@@ -1,26 +1,3 @@
-"""
-01_eda.py  —  Exploratory Data Analysis & Preprocessing
-Project 5: Robust Medical Vision  |  Phase 1
-Author : Kalash Kumari Thakur (230136)
-
-What this script does
----------------------
-1. Scans the dataset and builds a metadata DataFrame
-2. Checks for and reports data quality issues
-3. Produces mathematically grounded EDA visualisations
-4. Each finding directly drives a preprocessing decision
-   (rubric: "EDA dictates preprocessing")
-
-Outputs (all PNG)  →  outputs/eda/
-  class_distribution.png
-  image_resolution.png
-  pixel_intensity_stats.png
-  intensity_distribution.png
-  sample_grid.png
-  correlation_heatmap.png
-  eda_quality_report.png
-"""
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -32,7 +9,6 @@ from scipy.stats import skew, kurtosis, shapiro
 import warnings
 warnings.filterwarnings("ignore")
 
-# ── Config ────────────────────────────────────────────
 DATA_DIR   = Path("data/Training")
 CLASSES    = ["glioma", "meningioma", "notumor", "pituitary"]
 OUTPUT_DIR = Path("outputs/eda")
@@ -49,7 +25,6 @@ print("=" * 60)
 print("  EDA & PREPROCESSING ANALYSIS")
 print("=" * 60)
 
-# ── 1. Build metadata DataFrame ───────────────────────
 records = []
 for cls in CLASSES:
     cls_path = DATA_DIR / cls
@@ -77,7 +52,6 @@ df = pd.DataFrame(records)
 print(f"\nTotal images loaded : {len(df)}")
 print(f"Classes found       : {df['class'].unique().tolist()}")
 
-# ── 2. Class distribution & imbalance ─────────────────
 counts = df["class"].value_counts()
 imbalance = counts.max() / counts.min()
 print(f"\n── Class Distribution ──")
@@ -85,7 +59,6 @@ print(counts.to_string())
 print(f"\nImbalance ratio (max/min) : {imbalance:.3f}x")
 print(f"Decision → class_weight='balanced' in all models")
 
-# ── 3. Resolution analysis ────────────────────────────
 print(f"\n── Resolution Statistics ──")
 print(df[["width", "height"]].describe().round(2).to_string())
 non_square   = (~df["is_square"]).sum()
@@ -96,7 +69,6 @@ print(f"RGB images          : {rgb_count}")
 print(f"Grayscale images    : {gray_count}")
 print(f"Decision → resize all to 128×128, convert to grayscale")
 
-# ── 4. Pixel intensity analysis ───────────────────────
 print(f"\n── Pixel Intensity Analysis (sample 40 per class) ──")
 intensity_data = {}
 for cls in CLASSES:
@@ -120,7 +92,6 @@ for cls in CLASSES:
         print(f"    → Significant skew detected. "
               f"Normalise to [0,1] to stabilise feature distributions.")
 
-# ── 5. PLOTS ──────────────────────────────────────────
 
 # Plot 1: Class distribution
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
