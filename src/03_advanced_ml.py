@@ -1,44 +1,3 @@
-"""
-03_advanced_ml.py  —  Advanced ML: Calibrated SVM with PCA
-Project 5: Robust Medical Vision  |  Phase 1
-Author : Kalash Kumari Thakur (230136)
-
-Model : Support Vector Machine (RBF kernel) with Platt Scaling
-Why SVM over GMM/Time-Series:
-    Brain MRI classification is a fixed-size image task, not a
-    temporal or generative one. SVM with an RBF kernel learns a
-    maximum-margin hyperplane in the high-dimensional feature
-    space produced by HOG+LBP+GLCM. The kernel trick implicitly
-    maps features to a higher-dimensional space where classes
-    become linearly separable — precisely what is needed when
-    tumour boundaries produce complex, non-linear feature patterns.
-
-Advanced engineering:
-    PCA dimensionality reduction (95% variance retained) applied
-    before SVM to remove correlated features and reduce the
-    curse of dimensionality. This is the key difference from
-    the BML baseline — we use an *engineered representation*
-    (PCA-compressed feature space) rather than raw features.
-
-Uncertainty:
-    Platt Scaling (sigmoid post-hoc calibration) converts SVM
-    decision function scores to calibrated probabilities.
-    Shannon entropy and confidence thresholding applied identically
-    to BML for direct comparison.
-
-Outputs (all PNG) → outputs/aml/
-  aml_pca_variance.png
-  aml_pca_2d.png
-  aml_svm_confusion_matrix.png
-  aml_per_class_report.png
-  aml_confidence_distribution.png
-  aml_entropy_analysis.png
-  aml_calibration_curve.png
-  aml_uncertainty_threshold.png
-  aml_decision_boundary_pca.png
-  aml_bml_comparison.png
-"""
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -64,7 +23,6 @@ from scipy.stats import skew, kurtosis
 import warnings
 warnings.filterwarnings("ignore")
 
-# ── Config ────────────────────────────────────────────
 DATA_DIR   = Path("data/Training")
 CLASSES    = ["glioma", "meningioma", "notumor", "pituitary"]
 IMG_SIZE   = (128, 128)
@@ -77,10 +35,6 @@ COLORS_4 = ["#1f1f1f","#555555","#888888","#bbbbbb"]
 print("=" * 60)
 print("  ADVANCED ML  —  SVM + PCA (Platt-Calibrated)")
 print("=" * 60)
-
-# ══════════════════════════════════════════════════════
-# SECTION 1: FEATURE EXTRACTION (same pipeline as BML)
-# ══════════════════════════════════════════════════════
 
 def load_gray(path, size=IMG_SIZE):
     return np.array(
@@ -139,10 +93,6 @@ X_tr, X_te, y_tr, y_te = train_test_split(
     X_sc, y, test_size=0.20, random_state=SEED, stratify=y)
 X_tr, X_val, y_tr, y_val = train_test_split(
     X_tr, y_tr, test_size=0.15, random_state=SEED, stratify=y_tr)
-
-# ══════════════════════════════════════════════════════
-# SECTION 2: PCA — THE KEY ADVANCED STEP
-# ══════════════════════════════════════════════════════
 print("\n[2/6] PCA dimensionality reduction…")
 
 pca = PCA(n_components=0.95, random_state=SEED)  # retain 95% variance
@@ -206,9 +156,6 @@ plt.savefig(OUTPUT_DIR/"aml_pca_2d.png", dpi=150, bbox_inches="tight")
 plt.close()
 print("   PCA plots saved.")
 
-# ══════════════════════════════════════════════════════
-# SECTION 3: SVM WITH PLATT SCALING
-# ══════════════════════════════════════════════════════
 print("\n[3/6] Training Calibrated SVM (Platt scaling)…")
 
 # Platt scaling wraps SVM; sigmoid calibration fitted on 3-fold CV
@@ -237,9 +184,6 @@ cvs   = cross_val_score(svm_cal, np.vstack([X_tr_pca, X_te_pca]),
                         cv=cv, scoring="f1_macro", n_jobs=-1)
 print(f"  5-Fold CV Macro F1: {cvs.mean():.4f} ± {cvs.std():.4f}")
 
-# ══════════════════════════════════════════════════════
-# SECTION 4: UNCERTAINTY
-# ══════════════════════════════════════════════════════
 
 def entropy(p):
     p = np.clip(p, 1e-10, 1.0)
@@ -260,9 +204,6 @@ unc = {
 print(f"\n  High-conf accuracy (≥0.70): {unc['hi_acc']:.4f}")
 print(f"  Low-conf  accuracy (<0.70): {unc['lo_acc']:.4f}")
 
-# ══════════════════════════════════════════════════════
-# SECTION 5: PLOTS
-# ══════════════════════════════════════════════════════
 print("\n[4/6] Saving result plots…")
 
 # Confusion matrix
@@ -419,9 +360,6 @@ plt.savefig(OUTPUT_DIR/"aml_decision_boundary_pca.png",
             dpi=150, bbox_inches="tight")
 plt.close()
 
-# ══════════════════════════════════════════════════════
-# SECTION 6: BML vs AML COMPARISON
-# ══════════════════════════════════════════════════════
 print("\n[6/6] BML vs AML comparison plot…")
 
 # Load BML results from outputs if available, else use placeholders
