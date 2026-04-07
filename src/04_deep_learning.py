@@ -26,9 +26,6 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-# ══════════════════════════════════════════════════════
-# CONFIG
-# ══════════════════════════════════════════════════════
 DATA_DIR = Path("data/Training")
 CLASSES = ["glioma", "meningioma", "notumor", "pituitary"]
 IMG_SIZE = 224  # ResNet standard input
@@ -52,10 +49,6 @@ COLORS = {
 }
 COLORS_LIST = ["#1f1f1f", "#555555", "#888888", "#bbbbbb"]
 
-# ══════════════════════════════════════════════════════
-# SECTION 1: DATASET & AUGMENTATION
-# ══════════════════════════════════════════════════════
-
 
 class MRIDataset(Dataset):
     def __init__(self, image_paths, labels, transform=None):
@@ -73,8 +66,6 @@ class MRIDataset(Dataset):
         label = self.labels[idx]
         return img, label
 
-
-# Strong augmentation for training (clinical variation simulation)
 train_transform = transforms.Compose(
     [
         transforms.Resize((IMG_SIZE, IMG_SIZE)),
@@ -85,7 +76,7 @@ train_transform = transforms.Compose(
         transforms.ToTensor(),
         transforms.Normalize(
             [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
-        ),  # ImageNet stats
+        ), 
     ]
 )
 
@@ -100,10 +91,6 @@ val_transform = transforms.Compose(
 print("=" * 60)
 print("  DEEP LEARNING  —  ResNet-18 + MC-Dropout Uncertainty")
 print("=" * 60)
-
-# ══════════════════════════════════════════════════════
-# SECTION 2: DATA LOADING
-# ══════════════════════════════════════════════════════
 
 print("\n[1/8] Loading dataset…")
 label_map = {c: i for i, c in enumerate(CLASSES)}
@@ -144,10 +131,6 @@ test_loader = DataLoader(
     test_dataset, batch_size=32, shuffle=False, num_workers=0, pin_memory=True
 )
 
-# ══════════════════════════════════════════════════════
-# SECTION 3: MODEL — ResNet-18 with MC-Dropout
-# ══════════════════════════════════════════════════════
-
 print("\n[2/8] Building ResNet-18 with MC-Dropout…")
 
 
@@ -183,9 +166,6 @@ trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(f"  Total parameters: {total_params:,}")
 print(f"  Trainable (fine-tuned): {trainable_params:,}")
 
-# ══════════════════════════════════════════════════════
-# SECTION 4: TRAINING
-# ══════════════════════════════════════════════════════
 
 print("\n[3/8] Training ResNet-18…")
 
@@ -272,10 +252,6 @@ for epoch in range(1, 6):
 model.load_state_dict(torch.load(OUTPUT_DIR / "best_model.pth"))
 print(f"  Best validation accuracy: {best_val_acc:.4f}")
 
-# ══════════════════════════════════════════════════════
-# SECTION 5: MC-DROPOUT UNCERTAINTY
-# ══════════════════════════════════════════════════════
-
 print("\n[4/8] Running MC-Dropout for uncertainty estimation…")
 
 
@@ -328,9 +304,6 @@ print(f"  Macro F1: {f1:.4f}")
 print(f"  Brier Score: {brier:.4f}")
 print(f"\n{classification_report(all_labels, y_pred, target_names=CLASSES)}")
 
-# ══════════════════════════════════════════════════════
-# SECTION 6: PLOTS
-# ══════════════════════════════════════════════════════
 
 print("\n[5/8] Saving output plots…")
 
@@ -735,9 +708,6 @@ if len(features) > 0:
 
 print(f"\n[8/8] All plots saved → {OUTPUT_DIR}/")
 
-# ══════════════════════════════════════════════════════
-# SECTION 7: SAVE MODEL FOR INFERENCE
-# ══════════════════════════════════════════════════════
 print("\n[8/8] Saving model for inference…")
 torch.save(
     {
