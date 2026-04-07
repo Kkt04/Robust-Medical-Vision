@@ -1,32 +1,3 @@
-"""
-02_baseline_ml.py  —  Baseline ML: Random Forest Classifier
-Project 5: Robust Medical Vision  |  Phase 1
-Author : Kalash Kumari Thakur (230136)
-
-Model : Random Forest
-Why   : Random Forest is a natural probabilistic classifier — its
-        predict_proba() outputs come directly from the vote
-        distribution across 200 trees, making it an honest
-        uncertainty estimator without post-hoc calibration.
-        Its ensemble nature also makes it robust to the
-        high-dimensional HOG feature space.
-
-Features : HOG (324d) + LBP (26d) + GLCM (10d) + Intensity Stats (10d)
-           = ~370 features per image
-
-Outputs (all PNG) → outputs/bml/
-  bml_hog_visualization.png
-  bml_lbp_visualization.png
-  bml_feature_summary.png
-  bml_confusion_matrix.png
-  bml_per_class_report.png
-  bml_confidence_distribution.png
-  bml_entropy_analysis.png
-  bml_calibration_curve.png
-  bml_uncertainty_threshold.png
-  bml_feature_importance.png
-"""
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -49,7 +20,6 @@ from sklearn.metrics import (
 import warnings
 warnings.filterwarnings("ignore")
 
-# ── Config ────────────────────────────────────────────
 DATA_DIR   = Path("data/Training")
 CLASSES    = ["glioma", "meningioma", "notumor", "pituitary"]
 IMG_SIZE   = (128, 128)
@@ -67,10 +37,6 @@ COLORS = {
 print("=" * 60)
 print("  BASELINE ML  —  RANDOM FOREST")
 print("=" * 60)
-
-# ══════════════════════════════════════════════════════
-# SECTION 1: FEATURE EXTRACTION
-# ══════════════════════════════════════════════════════
 
 def load_gray(path, size=IMG_SIZE):
     return np.array(
@@ -216,7 +182,6 @@ X = np.nan_to_num(np.array(X_all), nan=0.0, posinf=1.0, neginf=0.0)
 y = np.array(y_all)
 print(f"\n  Feature matrix : {X.shape}")
 
-# ── Preprocessing ─────────────────────────────────────
 sel    = VarianceThreshold(1e-6)
 X_sel  = sel.fit_transform(X)
 scaler = StandardScaler()
@@ -229,9 +194,6 @@ X_tr, X_val, y_tr, y_val = train_test_split(
     X_tr, y_tr, test_size=0.15, random_state=SEED, stratify=y_tr)
 print(f"  Split → train={len(X_tr)}, val={len(X_val)}, test={len(X_te)}")
 
-# ══════════════════════════════════════════════════════
-# SECTION 2: RANDOM FOREST MODEL
-# ══════════════════════════════════════════════════════
 print("\n[3/5] Training Random Forest…")
 
 rf = RandomForestClassifier(
@@ -266,9 +228,6 @@ cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
 cv_scores = cross_val_score(rf, X_sc, y, cv=cv, scoring="f1_macro", n_jobs=-1)
 print(f"  5-Fold CV Macro F1: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
 
-# ══════════════════════════════════════════════════════
-# SECTION 3: UNCERTAINTY FUNCTIONS
-# ══════════════════════════════════════════════════════
 
 def entropy(proba):
     """H(p) = -sum p_k log(p_k).  High H → uncertain."""
@@ -296,9 +255,6 @@ print(f"    High-conf ({unc['hi_count']} preds) accuracy : {unc['hi_acc']}")
 print(f"    Low-conf  ({unc['lo_count']} preds) accuracy : {unc['lo_acc']}")
 print(f"    Mean entropy : {unc['mean_H']}")
 
-# ══════════════════════════════════════════════════════
-# SECTION 4: OUTPUT PLOTS
-# ══════════════════════════════════════════════════════
 print("\n[4/5] Saving result plots…")
 
 # Confusion matrix
