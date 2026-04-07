@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ── Reset & Base ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -30,7 +29,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ── Background Orbs ──────────────────────────────────────── */
 body::before, body::after {
   content: '';
   position: fixed;
@@ -51,7 +49,6 @@ body::after {
   bottom: -100px; right: -80px;
 }
 
-/* ── Header ───────────────────────────────────────────────── */
 .header {
   position: relative; z-index: 10;
   padding: 48px 40px 32px;
@@ -104,7 +101,6 @@ body::after {
 .dot-green { background: var(--success); box-shadow: 0 0 6px var(--success); }
 .dot-orange{ background: var(--warn); box-shadow: 0 0 6px var(--warn); }
 
-/* ── Sticky Tab Bar ───────────────────────────────────────── */
 .tabs-bar {
   position: sticky; top: 0; z-index: 20;
   background: rgba(8,11,20,0.85);
@@ -150,7 +146,6 @@ body::after {
   background: rgba(79,127,255,0.3);
 }
 
-/* ── Main Content ─────────────────────────────────────────── */
 .main { position: relative; z-index: 5; padding: 40px; }
 
 .tab-section { display: none; }
@@ -187,7 +182,6 @@ body::after {
   font-size: 12px; font-weight: 500; color: #a0b4ff;
 }
 
-/* ── Card Grid ────────────────────────────────────────────── */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -260,7 +254,6 @@ body::after {
 .tag-aml   { background: rgba(162,89,255,0.2);  color: #c084ff;        border: 1px solid rgba(162,89,255,0.3); }
 .tag-dl   { background: rgba(79,127,255,0.2);  color: var(--accent);        border: 1px solid rgba(79,127,255,0.3); }
 
-/* ── Results Summary Banner ───────────────────────────────── */
 .results-banner {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -294,7 +287,6 @@ body::after {
   font-size: 11px; color: var(--muted); margin-top: 2px;
 }
 
-/* ── Key Finding Banner ───────────────────────────────────── */
 .finding-box {
   margin-bottom: 28px;
   background: linear-gradient(135deg, rgba(79,127,255,0.05), rgba(162,89,255,0.05));
@@ -308,7 +300,6 @@ body::after {
 }
 .finding-box strong { color: #fff; }
 
-/* ── Lightbox ─────────────────────────────────────────────── */
 .lightbox {
   display: none; position: fixed; inset: 0; z-index: 1000;
   background: rgba(4,6,14,0.92);
@@ -350,7 +341,6 @@ body::after {
 }
 .lb-close:hover { background: rgba(255,255,255,0.14); }
 
-/* ── Footer ───────────────────────────────────────────────── */
 .footer {
   position: relative; z-index: 5;
   text-align: center; padding: 32px 40px;
@@ -359,7 +349,6 @@ body::after {
 }
 .footer span { color: var(--accent); font-weight: 500; }
 
-/* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 700px) {
   .header { padding: 28px 20px 20px; }
   .tabs-bar { padding: 0 12px; overflow-x: auto; }
@@ -367,7 +356,6 @@ body::after {
   .stat-pill { font-size: 11px; }
 }
 
-/* ── Prediction Section ───────────────────────────────────── */
 .prediction-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -609,7 +597,6 @@ body::after {
   font-size: 18px;
 }
 
-/* Loading Spinner */
 .loading-indicator {
   text-align: center;
   padding: 40px;
