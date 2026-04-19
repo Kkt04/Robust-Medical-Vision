@@ -36,6 +36,7 @@ medical_vision_project/
 ├── index.html                    # Interactive dashboard
 ├── styles.css                    # Dashboard styling
 ├── app.js                        # Dashboard logic
+├── server.py                    # Flask inference server
 ├── data/
 │   └── Training/
 │       ├── glioma/               # ~1400 images
@@ -56,9 +57,9 @@ medical_vision_project/
 ```
 --- 
 ```
-
 medical_vision_project/
 ├── README.md
+├── server.py                    # Flask inference server
 ├── data/
 │   └── Training/
 │       ├── glioma/
@@ -155,7 +156,17 @@ python3 src/03_advanced_ml.py
 python3 src/04_deep_learning.py
 ```
 
-### 4. View Dashboard
+### 4. Run Inference Server
+
+For live predictions, start the Flask server:
+
+```bash
+python3 server.py
+```
+
+The server runs on `http://localhost:5000` (or port 5001 if 5000 is in use).
+
+### 5. View Dashboard
 
 Open `index.html` in a web browser to explore:
 
