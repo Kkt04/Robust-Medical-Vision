@@ -1,0 +1,17 @@
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Serving Flask app 'server'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://10.177.86.200:5001
+[33mPress CTRL+C to quit[0m
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+127.0.0.1 - - [19/Apr/2026 07:05:31] "OPTIONS /predict HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 07:05:31] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 07:06:04] "OPTIONS /predict HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 07:06:05] "POST /predict HTTP/1.1" 200 -

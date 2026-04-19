@@ -407,6 +407,8 @@ function handleFile(file) {
   reader.readAsDataURL(file);
 }
 
+const API_URL = 'http://localhost:5001';
+
 async function predictImage(imageSource) {
   const loading = document.getElementById('loading-indicator');
   const resultSection = document.getElementById('result-section');
@@ -414,12 +416,35 @@ async function predictImage(imageSource) {
   if (loading) loading.style.display = 'block';
   if (resultSection) resultSection.style.display = 'none';
   
-  // Simulate prediction (in production, this would call a backend API)
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Generate mock prediction results
-  const mockPrediction = generateMockPrediction();
-  displayPrediction(mockPrediction, imageSource);
+  try {
+    let imageData;
+    if (imageSource.startsWith('data:')) {
+      imageData = imageSource;
+    } else {
+      const response = await fetch(imageSource);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      imageData = await new Promise((resolve) => {
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    }
+    
+    const payload = { image: imageData };
+    const res = await fetch(`${API_URL}/predict`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!res.ok) throw new Error('Prediction failed');
+    const prediction = await res.json();
+    
+    displayPrediction(prediction, imageSource);
+  } catch (err) {
+    console.error('Prediction error:', err);
+    alert('Failed to load model. Please ensure server.py is running: python server.py');
+  }
   
   if (loading) loading.style.display = 'none';
   if (resultSection) resultSection.style.display = 'block';
