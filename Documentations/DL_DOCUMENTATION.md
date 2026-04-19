@@ -2,7 +2,7 @@
 
 ## Overview
 
-This module implements the **Deep Learning (DL)** phase of Project 5: Robust Medical Vision. It uses a ResNet-18 convolutional neural network with **MC-Dropout** for uncertainty estimation.
+This module implements the **Deep Learning (DL)** phase of  Robust Medical Vision. It uses a ResNet-18 convolutional neural network with **MC-Dropout** for uncertainty estimation.
 
 ---
 
