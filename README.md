@@ -170,11 +170,11 @@ The server runs on `http://localhost:5000` (or port 5001 if 5000 is in use).
 
 Open `index.html` in a web browser to explore:
 
-- 📊 EDA visualizations (7 plots)
-- 🌲 BML model results (10 plots)
-- ⚡ AML model results (10 plots)
-- 🧠 DL model results (12 plots)
-- 🎯 Live prediction with uncertainty estimation
+-  EDA visualizations (7 plots)
+-  BML model results (10 plots)
+-  AML model results (10 plots)
+-  DL model results (12 plots)
+-  Live prediction with uncertainty estimation
 
 ---
 
