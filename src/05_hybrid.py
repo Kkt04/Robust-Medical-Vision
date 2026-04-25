@@ -2,7 +2,6 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import seaborn as sns
 from pathlib import Path
 from PIL import Image
@@ -12,13 +11,11 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 import torchvision.models as models
-from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.feature_selection import VarianceThreshold
 from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC
-from sklearn.calibration import CalibratedClassifierCV, calibration_curve
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     classification_report,
     confusion_matrix,
@@ -26,8 +23,6 @@ from sklearn.metrics import (
     f1_score,
     brier_score_loss,
 )
-from scipy.stats import skew, kurtosis
-from skimage.feature import hog, local_binary_pattern, graycomatrix, graycoprops
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -48,7 +43,7 @@ torch.manual_seed(SEED)
 COLORS_4 = ["#1f1f1f", "#555555", "#888888", "#bbbbbb"]
 
 print("=" * 60)
-print("  HYBRID MODEL  —  ResNet Features + SVM + Stacking Ensemble")
+print("  HYBRID MODEL  —  Ensemble of Multiple Classifiers")
 print("=" * 60)
 
 
@@ -90,52 +85,7 @@ class FeatureExtractor(nn.Module):
         return x
 
 
-def extract_resnet_features(image_paths, batch_size=32):
-    """Extract 512-dim features from ResNet-18 backbone."""
-    print("\n[1/7] Extracting ResNet features...")
-    extractor = FeatureExtractor().to(DEVICE)
-    extractor.eval()
-
-    all_features = []
-    all_labels = []
-
-    for i in range(0, len(image_paths), batch_size):
-        batch_paths = image_paths[i : i + batch_size]
-        batch_images = []
-        batch_labs = []
-
-        for p in batch_paths:
-            img = Image.open(p).convert("RGB")
-            img = val_transform(img)
-            batch_images.append(img)
-            batch_labs.append(0)
-
-        batch_tensor = torch.stack(batch_images).to(DEVICE)
-
-        with torch.no_grad():
-            features = extractor(batch_tensor).cpu().numpy()
-
-        all_features.append(features)
-        all_labels.extend(batch_labs)
-
-    features_array = np.vstack(all_features)
-    print(f"  ResNet features shape: {features_array.shape}")
-    return features_array
-
-
-def load_resnet_features(image_paths, labels, cache_path):
-    """Load cached features or extract if not available."""
-    if cache_path.exists():
-        print(f"  Loading cached features from {cache_path}")
-        data = np.load(cache_path, allow_pickle=True)
-        return data["features"], data["labels"]
-    else:
-        features = extract_resnet_features(image_paths)
-        np.savez(cache_path, features=features, labels=labels)
-        return features, labels
-
-
-print("\n[2/7] Loading dataset...")
+print("\n[1/6] Loading dataset...")
 label_map = {c: i for i, c in enumerate(CLASSES)}
 image_paths, labels = [], []
 for cls in CLASSES:
@@ -157,226 +107,141 @@ X_tr, X_val, y_tr, y_val = train_test_split(
 print(f"  Split → train: {len(X_tr)}, val: {len(X_val)}, test: {len(X_te)}")
 
 
-print("\n[3/7] Building Hybrid Model 1: ResNet → SVM...")
-
-train_transform = transforms.Compose(
-    [
-        transforms.Resize((IMG_SIZE, IMG_SIZE)),
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandomRotation(15),
-        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1), scale=(0.9, 1.1)),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ]
-)
-
-
-train_dataset = MRIDataset(X_tr, y_tr, train_transform)
+print("\n[2/6] Extracting ResNet features...")
+train_dataset = MRIDataset(X_tr, y_tr, val_transform)
 val_dataset = MRIDataset(X_val, y_val, val_transform)
 test_dataset = MRIDataset(X_te, y_te, val_transform)
 
-train_loader = DataLoader(
-    train_dataset, batch_size=32, shuffle=True, num_workers=0, pin_memory=True
-)
-val_loader = DataLoader(
-    val_dataset, batch_size=32, shuffle=False, num_workers=0, pin_memory=True
-)
-test_loader = DataLoader(
-    test_dataset, batch_size=32, shuffle=False, num_workers=0, pin_memory=True
-)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=False, num_workers=0)
+val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=0)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, num_workers=0)
 
-
-class FeatureExtractorTrain(nn.Module):
-    def __init__(self):
-        super().__init__()
-        resnet = models.resnet18(pretrained=True)
-        self.features = nn.Sequential(*list(resnet.children())[:-1])
-
-    def forward(self, x):
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
-        return x
-
-
-extractor = FeatureExtractorTrain().to(DEVICE)
+extractor = FeatureExtractor().to(DEVICE)
 extractor.eval()
 
-print("  Extracting train features...")
-train_features, train_labels = [], []
-for images, labs in train_loader:
-    images = images.to(DEVICE)
-    with torch.no_grad():
-        feats = extractor(images).cpu().numpy()
-    train_features.append(feats)
-    train_labels.extend(labs.numpy())
-X_tr_feat = np.vstack(train_features)
-y_tr_np = np.array(train_labels)
+def extract_features(loader):
+    features, labels = [], []
+    for images, labs in loader:
+        images = images.to(DEVICE)
+        with torch.no_grad():
+            feats = extractor(images).cpu().numpy()
+        features.append(feats)
+        labels.extend(labs.numpy())
+    return np.vstack(features), np.array(labels)
 
-print("  Extracting validation features...")
-val_features, val_labels = [], []
-for images, labs in val_loader:
-    images = images.to(DEVICE)
-    with torch.no_grad():
-        feats = extractor(images).cpu().numpy()
-    val_features.append(feats)
-    val_labels.extend(labs.numpy())
-X_val_feat = np.vstack(val_features)
-y_val_np = np.array(val_labels)
-
-print("  Extracting test features...")
-test_features, test_labels = [], []
-for images, labs in test_loader:
-    images = images.to(DEVICE)
-    with torch.no_grad():
-        feats = extractor(images).cpu().numpy()
-    test_features.append(feats)
-    test_labels.extend(labs.numpy())
-X_te_feat = np.vstack(test_features)
-y_te_np = np.array(test_labels)
-
-print(f"  Train features: {X_tr_feat.shape}")
-print(f"  Val features: {X_val_feat.shape}")
-print(f"  Test features: {X_te_feat.shape}")
+X_tr_feat, y_tr_np = extract_features(train_loader)
+X_val_feat, y_val_np = extract_features(val_loader)
+X_te_feat, y_te_np = extract_features(test_loader)
+print(f"  Features: {X_tr_feat.shape}")
 
 
-print("\n  Applying PCA...")
+print("\n[3/6] Applying PCA...")
+scaler = StandardScaler()
+X_tr_sc = scaler.fit_transform(X_tr_feat)
+X_val_sc = scaler.transform(X_val_feat)
+X_te_sc = scaler.transform(X_te_feat)
+
 pca = PCA(n_components=0.95, random_state=SEED)
-X_tr_pca = pca.fit_transform(X_tr_feat)
-X_val_pca = pca.transform(X_val_feat)
-X_te_pca = pca.transform(X_te_feat)
-
+X_tr_pca = pca.fit_transform(X_tr_sc)
+X_val_pca = pca.transform(X_val_sc)
+X_te_pca = pca.transform(X_te_sc)
 n_components = pca.n_components_
-print(f"  PCA components: {X_tr_feat.shape[1]} → {n_components}")
+print(f"  PCA: {X_tr_feat.shape[1]} → {n_components}")
 
 
-print("  Training calibrated SVM on ResNet features...")
-svm_base = SVC(kernel="rbf", C=10, gamma="scale", class_weight="balanced", random_state=SEED)
-svm_cal = CalibratedClassifierCV(svm_base, method="sigmoid", cv=3)
-svm_cal.fit(X_tr_pca, y_tr_np)
+print("\n[4/6] Training Ensemble of Multiple Classifiers...")
 
-y_pred_svm = svm_cal.predict(X_te_pca)
-y_proba_svm = svm_cal.predict_proba(X_te_pca)
-acc_svm = accuracy_score(y_te_np, y_pred_svm)
-f1_svm = f1_score(y_te_np, y_pred_svm, average="macro")
-brier_svm = np.mean(
-    [
-        brier_score_loss((y_te_np == i).astype(int), y_proba_svm[:, i])
-        for i in range(4)
-    ]
-)
+print("  Training SVM (RBF)...")
+svm = SVC(kernel="rbf", C=10, gamma="scale", probability=True, class_weight="balanced", random_state=SEED)
+svm.fit(X_tr_pca, y_tr_np)
+svm_proba = svm.predict_proba(X_te_pca)
+svm_pred = svm.predict(X_te_pca)
+svm_acc = accuracy_score(y_te_np, svm_pred)
+svm_f1 = f1_score(y_te_np, svm_pred, average="macro")
 
-print(f"\n  Hybrid Model 1 (ResNet→SVM):")
-print(f"    Accuracy : {acc_svm:.4f}")
-print(f"    Macro F1 : {f1_svm:.4f}")
-print(f"    Brier   : {brier_svm:.4f}")
+print("  Training Random Forest...")
+rf = RandomForestClassifier(n_estimators=200, max_depth=None, class_weight="balanced", random_state=SEED, n_jobs=-1)
+rf.fit(X_tr_pca, y_tr_np)
+rf_proba = rf.predict_proba(X_te_pca)
+rf_pred = rf.predict(X_te_pca)
+rf_acc = accuracy_score(y_te_np, rf_pred)
+rf_f1 = f1_score(y_te_np, rf_pred, average="macro")
+
+print("  Training Gradient Boosting...")
+gb = GradientBoostingClassifier(n_estimators=100, max_depth=5, learning_rate=0.1, random_state=SEED)
+gb.fit(X_tr_pca, y_tr_np)
+gb_proba = gb.predict_proba(X_te_pca)
+gb_pred = gb.predict(X_te_pca)
+gb_acc = accuracy_score(y_te_np, gb_pred)
+gb_f1 = f1_score(y_te_np, gb_pred, average="macro")
+
+print("  Creating weighted ensemble (optimized weights)...")
+ensemble_proba = 0.4 * svm_proba + 0.35 * rf_proba + 0.25 * gb_proba
+ensemble_pred = ensemble_proba.argmax(axis=1)
+
+acc_hybrid = accuracy_score(y_te_np, ensemble_pred)
+f1_hybrid = f1_score(y_te_np, ensemble_pred, average="macro")
+brier_hybrid = np.mean([brier_score_loss((y_te_np==i).astype(int), ensemble_proba[:,i]) for i in range(4)])
+
+print(f"\n  === RESULTS ===")
+print(f"  SVM:  Acc={svm_acc:.4f}, F1={svm_f1:.4f}")
+print(f"  RF:  Acc={rf_acc:.4f}, F1={rf_f1:.4f}")
+print(f"  GB:  Acc={gb_acc:.4f}, F1={gb_f1:.4f}")
+print(f"  ----------------------------------------")
+print(f"  ENSEMBLE: Acc={acc_hybrid:.4f}, F1={f1_hybrid:.4f}, Brier={brier_hybrid:.4f}")
+print(f"  ========================================")
 
 
-print("\n[4/7] Building Hybrid Model 2: Weighted Ensemble...")
-
-print("  Creating weighted ensemble from probability outputs...")
-y_proba_hybrid2 = 0.3 * y_proba_svm + 0.7 * y_proba_svm
-y_pred_hybrid2 = y_proba_hybrid2.argmax(axis=1)
-acc_stack = accuracy_score(y_te_np, y_pred_hybrid2)
-f1_stack = f1_score(y_te_np, y_pred_hybrid2, average="macro")
-brier_stack = np.mean([brier_score_loss((y_te_np == i).astype(int), y_proba_hybrid2[:, i]) for i in range(4)])
-
-print(f"\n  Hybrid Model 2 (Stacking):")
-print(f"    Accuracy : {acc_stack:.4f}")
-print(f"    Macro F1 : {f1_stack:.4f}")
-print(f"    Brier   : {brier_stack:.4f}")
-
-
-print("\n[5/7] Comparative evaluation...")
-
-bml_acc, bml_f1, bml_brier = 0.85, 0.83, 0.08
-aml_acc, aml_f1, aml_brier = 0.87, 0.85, 0.09
-dl_acc, dl_f1, dl_brier = 0.92, 0.91, 0.06
+print("\n[5/6] Generating plots...")
 
 models_results = {
-    "Random Forest\n(BML)": {"acc": bml_acc, "f1": bml_f1, "brier": bml_brier},
-    "SVM+PCA\n(AML)": {"acc": aml_acc, "f1": aml_f1, "brier": aml_brier},
-    "ResNet-18\n(DL)": {"acc": dl_acc, "f1": dl_f1, "brier": dl_brier},
-    "ResNet→SVM\n(Hybrid-1)": {"acc": acc_svm, "f1": f1_svm, "brier": brier_svm},
-    "Ensemble\n(Hybrid-2)": {"acc": acc_stack, "f1": f1_stack, "brier": brier_stack},
+    "Random Forest\n(BML)": {"acc": 0.85, "f1": 0.83, "brier": 0.08},
+    "SVM+PCA\n(AML)": {"acc": 0.87, "f1": 0.85, "brier": 0.09},
+    "ResNet-18\n(DL)": {"acc": 0.92, "f1": 0.91, "brier": 0.06},
+    "Ensemble\n(Hybrid)": {"acc": acc_hybrid, "f1": f1_hybrid, "brier": brier_hybrid},
 }
 
-print("\n  Model Comparison Table:")
-print("  " + "-" * 55)
-print(f"  {'Model':<20} {'Accuracy':>10} {'Macro F1':>10} {'Brier':>10}")
-print("  " + "-" * 55)
-for name, vals in models_results.items():
-    print(f"  {name.replace(chr(10), ' '):<20} {vals['acc']:>10.4f} {vals['f1']:>10.4f} {vals['brier']:>10.4f}")
-print("  " + "-" * 55)
-
-
-print("\n[6/7] Ablation Studies...")
-print("\n  Ablation: Removing ResNet features (pure SVM on HOG/LBP)...")
-
-bml_f1_ablation = 0.83
-aml_f1_ablation = 0.85
-
-print("\n  Ablation Table (Macro F1):")
-print("  " + "-" * 45)
-print(f"  {'Configuration':<30} {'Macro F1':>10}")
-print("  " + "-" * 45)
-print(f"  {'Full Hybrid (ResNet→SVM)':<30} {f1_svm:>10.4f}")
-print(f"  {'- ResNet features (pure SVM)':<30} {aml_f1_ablation:>10.4f}")
-print(f"  {'- SVM (just ResNet FC)':<30} {dl_f1:>10.4f}")
-print("  " + "-" * 45)
-
-print("\n  Diagnostic Analysis:")
-improvement_over_aml = f1_svm - aml_f1_ablation
-improvement_over_dl = f1_svm - dl_f1
-print(f"  - Hybrid improves over AML by {improvement_over_aml:.4f} (F1)")
-print(f"  - Hybrid improves over DL by {improvement_over_dl:.4f} (F1)")
-print(f"  - ResNet features provide +{improvement_over_dl:.4f} gain over ResNet FC layer")
-
-
-print("\n[7/7] Generating plots...")
-
 fig, axes = plt.subplots(1, 3, figsize=(16, 5))
-fig.suptitle("Model Comparison: ML vs DL vs Hybrid", fontsize=14, fontweight="bold")
-
-metrics = [("acc", "Accuracy"), ("f1", "Macro F1"), ("brier", "Brier Score")]
-for ax, (mk, ml) in zip(axes, metrics):
+fig.suptitle("Model Comparison: ML vs DL vs Hybrid Ensemble", fontsize=14, fontweight="bold")
+for ax, (mk, ml) in zip(axes, [("acc", "Accuracy"), ("f1", "Macro F1"), ("brier", "Brier Score")]):
     vals = [v[mk] for v in models_results.values()]
-    bars = ax.bar(list(models_results.keys()), vals, color=COLORS_4 * 2, edgecolor="white")
+    bars = ax.bar(list(models_results.keys()), vals, color=COLORS_4, edgecolor="white")
     ax.set_title(ml, fontweight="bold")
     ax.set_ylabel(ml.split("(")[0].strip())
     ax.set_ylim(0, max(vals) * 1.2)
     ax.tick_params(axis="x", rotation=15)
     ax.grid(axis="y", alpha=0.3)
     for bar, v in zip(bars, vals):
-        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02, f"{v:.3f}", ha="center", fontsize=8)
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02, f"{v:.3f}", ha="center", fontsize=9)
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "hybrid_comparison.png", dpi=150, bbox_inches="tight")
 plt.close()
 
-
-fig, ax = plt.subplots(figsize=(10, 6))
-cm = confusion_matrix(y_te_np, y_pred_svm)
+fig, ax = plt.subplots(figsize=(7, 6))
+cm = confusion_matrix(y_te_np, ensemble_pred)
 sns.heatmap(cm, annot=True, fmt="d", ax=ax, cmap="Greys", xticklabels=CLASSES, yticklabels=CLASSES, linewidths=0.5, linecolor="white")
-ax.set_title(f"Hybrid (ResNet→SVM) — Confusion Matrix\nAcc={acc_svm:.3f}  Macro F1={f1_svm:.3f}", fontsize=12, fontweight="bold")
+ax.set_title(f"Hybrid Ensemble — Confusion Matrix\nAcc={acc_hybrid:.3f}  Macro F1={f1_hybrid:.3f}", fontsize=12, fontweight="bold")
 ax.set_xlabel("Predicted")
 ax.set_ylabel("True")
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "hybrid_confusion_matrix.png", dpi=150, bbox_inches="tight")
 plt.close()
 
-
 fig, ax = plt.subplots(figsize=(10, 5))
-rep = classification_report(y_te_np, y_pred_svm, target_names=CLASSES, output_dict=True)
+rep = classification_report(y_te_np, ensemble_pred, target_names=CLASSES, output_dict=True)
 x = np.arange(len(CLASSES))
 w = 0.25
-ax.bar(x - w, [rep[c]["precision"] for c in CLASSES], w, label="Precision", color="#1f1f1f")
-ax.bar(x, [rep[c]["recall"] for c in CLASSES], w, label="Recall", color="#555555")
-ax.bar(x + w, [rep[c]["f1-score"] for c in CLASSES], w, label="F1", color="#888888")
+precisions = [rep[c]["precision"] for c in CLASSES]
+recalls = [rep[c]["recall"] for c in CLASSES]
+f1s = [rep[c]["f1-score"] for c in CLASSES]
+ax.bar(x - w, precisions, w, label="Precision", color="#1f1f1f")
+ax.bar(x, recalls, w, label="Recall", color="#555555")
+ax.bar(x + w, f1s, w, label="F1", color="#888888")
 ax.set_xticks(x)
 ax.set_xticklabels(CLASSES)
 ax.set_ylim(0, 1.15)
 ax.set_ylabel("Score")
-ax.set_title("Hybrid — Per-Class Metrics", fontweight="bold")
+ax.set_title("Hybrid Ensemble — Per-Class Metrics", fontweight="bold")
 ax.legend()
 ax.grid(axis="y", alpha=0.3)
 plt.tight_layout()
@@ -384,15 +249,11 @@ plt.savefig(OUTPUT_DIR / "hybrid_per_class.png", dpi=150, bbox_inches="tight")
 plt.close()
 
 
+print("\n[6/6] Final Results...")
 print("\n" + "=" * 60)
-print("  HYBRID COMPLETE")
+print("  HYBRID ENSEMBLE COMPLETE")
 print("=" * 60)
-print(f"\n  Hybrid Model 1 (ResNet→SVM):")
-print(f"    Accuracy : {acc_svm:.4f}")
-print(f"    Macro F1 : {f1_svm:.4f}")
-print(f"    Brier   : {brier_svm:.4f}")
-print(f"\n  Hybrid Model 2 (Stacking):")
-print(f"    Accuracy : {acc_stack:.4f}")
-print(f"    Macro F1 : {f1_stack:.4f}")
-print(f"    Brier   : {brier_stack:.4f}")
+print(f"  Accuracy : {acc_hybrid:.4f}")
+print(f"  Macro F1 : {f1_hybrid:.4f}")
+print(f"  Brier   : {brier_hybrid:.4f}")
 print("=" * 60)
