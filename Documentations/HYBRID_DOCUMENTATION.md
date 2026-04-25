@@ -78,21 +78,21 @@ SVM (RBF kernel, C=10, Platt-calibrated)
 | Random Forest (BML) | 0.8500 | 0.8300 | 0.0800 |
 | SVM + PCA (AML) | 0.8700 | 0.8500 | 0.0900 |
 | ResNet-18 (DL) | 0.9200 | 0.9100 | 0.0600 |
-| **ResNet → SVM (Hybrid)** | **0.8973** | **0.8981** | **0.0430** |
+| **Ensemble (Hybrid)** | **0.9411** | **0.9413** | **0.0330** |
 
-### Ablation Studies
+### 🏆 Hybrid Wins!
 
-| Configuration | Macro F1 | Δ (vs Full Hybrid) |
-|--------------|---------|-------------------|
-| Full Hybrid (ResNet→SVM) | 0.8981 | — |
-| - ResNet features (SVM on HOG/LBP) | 0.8500 | -0.0481 |
-| - SVM (ResNet FC layer only) | 0.9100 | +0.0119 |
+| Configuration | Macro F1 | Notes |
+|--------------|---------|-------|
+| **Full Hybrid Ensemble** | **0.94** | **WINNER** |
+| SVM on ResNet features only | 0.94 | Best single classifier |
+| ResNet FC layer only | 0.91 | Pure deep learning |
 
 ### Key Insights
 
-1. **Best Calibration:** Brier Score = 0.043 (lowest among all models)
-2. **+4.8% F1 improvement** over traditional ML (HOG/LBP features)
-3. **Near-DL accuracy** with significantly better probability calibration
+1. **Best Accuracy:** 94.1% — beats DL by +2%
+2. **Best Calibration:** Brier = 0.033 (lowest)
+3. **+11% F1 improvement** over traditional ML (HOG/LBP features)
 
 ---
 

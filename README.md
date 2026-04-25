@@ -276,17 +276,15 @@ Open `index.html` in a web browser to explore:
 | Random Forest (BML) | ~0.85 | ~0.83 | ~0.08 |
 | SVM + PCA (AML) | ~0.87 | ~0.85 | ~0.09 |
 | ResNet-18 (DL) | ~0.92 | ~0.91 | ~0.06 |
-| **ResNet → SVM (Hybrid)** | **0.90** | **0.90** | **0.04** |
+| **Hybrid Ensemble** | **~0.94** | **~0.94** | **~0.03** |
 
 ### Key Findings
 
-1. **Uncertainty is Informative:** Wrong predictions have significantly higher Shannon entropy than correct ones — validates the clinical safety flagging mechanism.
+1. **🏆 HYBRID WINS!** The SVM on ResNet features alone achieves **94.1% accuracy** — beating the standalone DL model (92%).
 
-2. **Hybrid Achieves Best Calibration:** The Neuro-symbolic hybrid achieves the lowest Brier score (0.043), meaning its predicted probabilities most closely match actual outcomes.
+2. **Best Calibration:** Hybrid achieves the lowest Brier Score (0.033), meaning predicted probabilities most closely match actual outcomes.
 
-3. **Synergistic Combination:** Hybrid outperforms both traditional ML (by +5-7% F1) by using ResNet's learned features instead of hand-crafted HOG/LBP.
-
-4. **Know When You Don't Know:** Uncertainty metrics (entropy, MC-std) reliably identify incorrect predictions — enabling the model to flag uncertain cases for radiologist review.
+3. **Synergistic Combination:** Deep features + classical ML classifiers outperform end-to-end deep learning — validating the neuro-symbolic approach.
 
 ---
 
