@@ -20,8 +20,8 @@
     <div class="stats-row">
       <div class="stat-pill"><span class="dot dot-blue"></span>4 Tumour Classes</div>
       <div class="stat-pill"><span class="dot dot-orange"></span>~7k MRI Images</div>
-      <div class="stat-pill"><span class="dot dot-green"></span>2 Models Trained</div>
-      <div class="stat-pill"><span class="dot dot-purple"></span>27 Output Plots</div>
+      <div class="stat-pill"><span class="dot dot-green"></span>5 Models Trained</div>
+      <div class="stat-pill"><span class="dot dot-purple"></span>31 Output Plots</div>
     </div>
   </header>
 
@@ -37,6 +37,9 @@
     </button>
     <button class="tab-btn" data-tab="dl" role="tab" id="tab-dl" aria-controls="section-dl">
       🧠 Deep Learning <span class="tab-badge">12</span>
+    </button>
+    <button class="tab-btn" data-tab="hybrid" role="tab" id="tab-hybrid" aria-controls="section-hybrid">
+      🔗 Hybrid <span class="tab-badge">4</span>
     </button>
     <button class="tab-btn" data-tab="predict" role="tab" id="tab-predict" aria-controls="section-predict">
       🎯 Predict <span class="tab-badge">New</span>
@@ -195,6 +198,46 @@
       </div>
 
       <div class="grid" id="grid-dl"></div>
+    </section>
+
+    <!-- Hybrid Section -->
+    <section class="tab-section" id="section-hybrid" role="tabpanel" aria-labelledby="tab-hybrid">
+      <div class="section-header">
+        <h2><span class="section-icon">🔗</span> Hybrid Model — Neuro-Symbolic</h2>
+        <p>Neuro-symbolic hybrid combining deep learning feature extraction with classical ML classification. ResNet-18 (frozen, pretrained on ImageNet) provides 512-dim features, fed through PCA and SVM with RBF kernel + Platt scaling. This achieves the <strong>best calibration</strong> (lowest Brier Score) enabling trustworthy uncertainty estimation.</p>
+        <div class="model-tag">🔗 ResNet-18 (frozen) → 512-dim → PCA → SVM (RBF + Platt) · Best Calibration</div>
+      </div>
+
+      <div class="results-banner">
+        <h3>Model Performance Snapshot</h3>
+        <div class="metric-item">
+          <div class="m-label">Accuracy</div>
+          <div class="m-val">~90%</div>
+          <div class="m-sub">Test set</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-label">Macro F1</div>
+          <div class="m-val">~0.90</div>
+          <div class="m-sub">All classes</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-label">Brier Score</div>
+          <div class="m-val">~0.04</div>
+          <div class="m-sub">Best Calibration</div>
+        </div>
+        <div class="metric-item">
+          <div class="m-label">vs DL</div>
+          <div class="m-val">-2%</div>
+          <div class="m-sub">accuracy</div>
+        </div>
+      </div>
+
+      <div class="finding-box">
+        <span class="finding-icon">⚖️</span>
+        <p><strong>Trade-off:</strong> Hybrid has <strong>slightly lower accuracy</strong> (90% vs 92%) but achieves <strong>best calibration</strong> (Brier: 0.043 vs 0.060). In clinical deployment, hybrid's probability estimates are most trustworthy — when it says 90% confidence, it IS 90% accurate. This is critical for knowing "when the model doesn't know".</p>
+      </div>
+
+      <div class="grid" id="grid-hybrid"></div>
     </section>
 
     <!-- Prediction Section -->

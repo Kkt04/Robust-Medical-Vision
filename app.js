@@ -271,6 +271,40 @@ const DATA = {
         tag: 'dl'
       },
     ]
+  },
+
+  hybrid: {
+    label: 'Hybrid',
+    icon: '🔗',
+    title: 'Hybrid Model — Neuro-Symbolic',
+    desc: 'Neuro-symbolic hybrid: ResNet-18 (frozen) → 512-dim features → PCA → SVM (RBF + Platt). Best calibration (lowest Brier Score) with competitive accuracy.',
+    modelTag: 'ResNet-18 (frozen) → Features → PCA → SVM (RBF + Platt) · Best Calibration',
+    cards: [
+      {
+        src: 'outputs/hybrid/architecture_diagram.png',
+        title: 'Architecture Diagram',
+        desc: 'Publication-ready diagram showing data flow from MRI through ResNet backbone, PCA, SVM classifier, and output with uncertainty.',
+        tag: 'hybrid'
+      },
+      {
+        src: 'outputs/hybrid/hybrid_comparison.png',
+        title: 'Model Comparison',
+        desc: 'Side-by-side comparison of BML, AML, DL, and Hybrid. Hybrid achieves best calibration (Brier: 0.043).',
+        tag: 'hybrid'
+      },
+      {
+        src: 'outputs/hybrid/hybrid_confusion_matrix.png',
+        title: 'Confusion Matrix',
+        desc: 'Hybrid model predictions vs ground truth. Shows strong performance across all four tumour classes.',
+        tag: 'hybrid'
+      },
+      {
+        src: 'outputs/hybrid/hybrid_per_class.png',
+        title: 'Per-Class Metrics',
+        desc: 'Precision, Recall and F1 for each class. Hybrid achieves ~0.90 F1 across classes.',
+        tag: 'hybrid'
+      },
+    ]
   }
 };
 

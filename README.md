@@ -123,9 +123,9 @@ medical_vision_project/
 |--------|---------|
 | **Architecture** | ResNet-18 (frozen) → 512-dim features → PCA → SVM (RBF + Platt) |
 | **Innovation** | Neuro-symbolic: DL learns features, ML classifies |
-| **Why Hybrid** | Combines deep feature learning with maximum-margin classification |
-| **Expected Accuracy** | ~90% |
-| **Brier Score** | Best calibration (0.043) — superior to all individual models |
+| **Why Hybrid** | Best calibration (Brier: 0.043) — trustworthy probabilities |
+| **Expected Accuracy** | ~90% (slightly lower than DL) |
+| **Trade-off** | Lower accuracy but best calibration for clinical safety |
 
 ---
 
