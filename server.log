@@ -15,3 +15,126 @@ Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituit
 127.0.0.1 - - [19/Apr/2026 07:05:31] "POST /predict HTTP/1.1" 200 -
 127.0.0.1 - - [19/Apr/2026 07:06:04] "OPTIONS /predict HTTP/1.1" 200 -
 127.0.0.1 - - [19/Apr/2026 07:06:05] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [23/Apr/2026 09:54:24] "OPTIONS /predict HTTP/1.1" 200 -
+127.0.0.1 - - [23/Apr/2026 09:54:25] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [23/Apr/2026 09:55:20] "OPTIONS /predict HTTP/1.1" 200 -
+127.0.0.1 - - [23/Apr/2026 09:55:20] "POST /predict HTTP/1.1" 200 -
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid_diagram.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid_diagram.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid_diagram.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid_diagram.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid_diagram.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid_diagram.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid_diagram.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002
+ * Detected change in '/Users/kalashkumarithakur/Desktop/Robust Medical Vision/src/05_hybrid.py', reloading
+Using device: cpu
+Loading model...
+Model loaded successfully. Classes: ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+ * Restarting with watchdog (fsevents)
+ * Debugger is active!
+ * Debugger PIN: 136-846-002

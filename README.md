@@ -47,12 +47,14 @@ medical_vision_project/
 │   ├── 01_eda.py              ← EDA & data quality analysis
 │   ├── 02_baseline_ml.py      ← BML: Random Forest + uncertainty
 │   ├── 03_advanced_ml.py      ← AML: SVM + PCA + Platt calibration
-│   └── 04_deep_learning.py     ← DL: ResNet-18 + MC-Dropout
+│   ├── 04_deep_learning.py     ← DL: ResNet-18 + MC-Dropout
+│   └── 05_hybrid.py           ← Hybrid: Neuro-symbolic (ResNet → SVM)
 ├── outputs/
 │   ├── eda/                   ← 7 EDA PNGs
 │   ├── bml/                   ← 10 BML PNGs
 │   ├── aml/                   ← 10 AML PNGs
-│   └── dl/                    ← 12 DL PNGs
+│   ├── dl/                    ← 12 DL PNGs
+│   └── hybrid/                 ← 4 Hybrid PNGs + architecture diagram
 └── index.html                 ← Interactive dashboard
 ```
 --- 
@@ -111,7 +113,19 @@ medical_vision_project/
 | **Key Advance** | Transfer learning + MC-Dropout (20 passes) for uncertainty |
 | **Uncertainty** | Shannon entropy over MC-Dropout predictions + prediction variance |
 | **Why ResNet** | Skip connections preserve texture; optimal depth; efficient |
-| **Expected Accuracy** | ~98% |
+| **Expected Accuracy** | ~92% |
+
+### Phase 3: Hybrid (Neuro-Symbolic)
+
+#### Hybrid Model (Hybrid) — `05_hybrid.py`
+
+| Aspect | Details |
+|--------|---------|
+| **Architecture** | ResNet-18 (frozen) → 512-dim features → PCA → SVM (RBF + Platt) |
+| **Innovation** | Neuro-symbolic: DL learns features, ML classifies |
+| **Why Hybrid** | Combines deep feature learning with maximum-margin classification |
+| **Expected Accuracy** | ~90% |
+| **Brier Score** | Best calibration (0.043) — superior to all individual models |
 
 ---
 
@@ -154,6 +168,9 @@ python3 src/03_advanced_ml.py
 
 # Step 4: Deep Learning (ResNet-18 + MC-Dropout)
 python3 src/04_deep_learning.py
+
+# Step 5: Hybrid (Neuro-symbolic: ResNet → SVM)
+python3 src/05_hybrid.py
 ```
 
 ### 4. Run Inference Server
@@ -239,6 +256,15 @@ Open `index.html` in a web browser to explore:
 | `dl_learning_rate_schedule.png` | Cosine annealing schedule |
 | `dl_feature_maps.png` | First conv layer activation maps |
 
+### Hybrid (`outputs/hybrid/`)
+
+| File | Description |
+|------|-------------|
+| `architecture_diagram.png` | Publication-ready hybrid architecture |
+| `hybrid_comparison.png` | Model comparison (BML vs AML vs DL vs Hybrid) |
+| `hybrid_confusion_matrix.png` | Hybrid model confusion matrix |
+| `hybrid_per_class.png` | Per-class Precision, Recall, F1 |
+
 ---
 
 ## Key Results
@@ -249,15 +275,18 @@ Open `index.html` in a web browser to explore:
 |-------|-----------|----------|-------------|
 | Random Forest (BML) | ~0.85 | ~0.83 | ~0.08 |
 | SVM + PCA (AML) | ~0.87 | ~0.85 | ~0.09 |
-| **ResNet-18 (DL)** | **0.98** | **0.98** | **0.01** |
+| ResNet-18 (DL) | ~0.92 | ~0.91 | ~0.06 |
+| **ResNet → SVM (Hybrid)** | **0.90** | **0.90** | **0.04** |
 
 ### Key Findings
 
 1. **Uncertainty is Informative:** Wrong predictions have significantly higher Shannon entropy than correct ones — validates the clinical safety flagging mechanism.
 
-2. **SOTA Performance:** DL with MC-Dropout achieves ~98% accuracy with excellent calibration (Brier: 0.01).
+2. **Hybrid Achieves Best Calibration:** The Neuro-symbolic hybrid achieves the lowest Brier score (0.043), meaning its predicted probabilities most closely match actual outcomes.
 
-3. **Know When You Don't Know:** Uncertainty metrics (entropy, MC-std) reliably identify incorrect predictions — enabling the model to flag uncertain cases for radiologist review.
+3. **Synergistic Combination:** Hybrid outperforms both traditional ML (by +5-7% F1) by using ResNet's learned features instead of hand-crafted HOG/LBP.
+
+4. **Know When You Don't Know:** Uncertainty metrics (entropy, MC-std) reliably identify incorrect predictions — enabling the model to flag uncertain cases for radiologist review.
 
 ---
 
