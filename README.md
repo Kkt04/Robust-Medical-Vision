@@ -1,5 +1,3 @@
-
-# Project 5: Robust Medical Vision
 ## Brain Tumor MRI Classification with Uncertainty Estimation
 
 **Student:** Kalash Kumari Thakur | **Enrollment:** 230136
