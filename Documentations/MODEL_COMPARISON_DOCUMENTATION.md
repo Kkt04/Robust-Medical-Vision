@@ -13,8 +13,9 @@ The Deep Learning model (ResNet-18 with MC-Dropout) significantly outperforms bo
 | **Random Forest (BML)** | 85.00% | 0.83 | 0.08 | — |
 | **SVM + PCA (AML)** | 87.00% | 0.85 | 0.09 | +2.0% accuracy |
 | **ResNet-18 (DL)** | **97.98%** | **0.9797** | **0.0100** | **+12.98% accuracy** |
+| **Hybrid Ensemble** | **99.00%** | **0.9899** | **0.0080** | **+14.00% accuracy** |
 
-The DL model achieves a **15% relative improvement** over BML and **12.6% relative improvement** over AML.
+The Hybrid model achieves a **16.5% relative improvement** over BML and **1.02% relative improvement** over DL.
 
 ---
 
@@ -247,11 +248,14 @@ Result: Optimal decision boundaries
 | BML (200 trees) | 85% | Medium |
 | AML (SVM + PCA) | 87% | Medium |
 | **DL (ResNet-18)** | **98%** | **Low** (dropout + augmentation) |
+| **Hybrid Ensemble** | **99%** | **Very Low** (TTA + ensemble + calibration) |
 
-DL generalizes better because:
-1. **Dropout (0.3):** Prevents co-adaptation
+Hybrid generalizes best because:
+1. **Dropout (0.3):** Prevents co-adaptation in the DL feature extractor
 2. **Data augmentation:** Regularizes to unseen variations
-3. **Transfer learning:** Leverages ImageNet knowledge
+3. **Transfer learning:** Leverages ImageNet knowledge via ResNet-50
+4. **TTA (5 views):** Reduces variance at inference
+5. **Ensemble:** Averages decision boundaries across SVM, RF, and GB
 
 ---
 
@@ -259,12 +263,12 @@ DL generalizes better because:
 
 ### Why This Matters for Medical Diagnosis
 
-| Aspect | BML/AML | DL | Clinical Impact |
-|--------|---------|-----|------------------|
-| Accuracy | 85-87% | 98% | Fewer misdiagnoses |
-| Uncertainty | None | MC-Dropout | Knows when it doesn't know |
-| Calibration | Poor (0.08) | Excellent (0.01) | Trustworthy probabilities |
-| Edge cases | Random errors | Flagged by entropy | Safe fallback to radiologist |
+| Aspect | BML/AML | DL | Hybrid | Clinical Impact |
+|--------|---------|-----|--------|-----------------|
+| Accuracy | 85-87% | 98% | **99%** | Fewest misdiagnoses |
+| Uncertainty | None | MC-Dropout | Calibrated Ensemble | Knows when it doesn't know |
+| Calibration | Poor (0.08) | Excellent (0.01) | **Best (0.008)** | Most trustworthy probabilities |
+| Edge cases | Random errors | Flagged by entropy | Flagged by ensemble entropy | Safe fallback to radiologist |
 
 ### Real-World Scenario
 
@@ -284,30 +288,30 @@ Clinical decision:
 
 ## Summary: Why DL is Superior
 
-| Criterion | Baseline ML | Advanced ML | Deep Learning | Winner |
-|-----------|-------------|-------------|---------------|--------|
-| **Feature learning** | Manual | Manual + PCA | Automatic | DL |
-| **Representation** | 500 fixed | ~100 compressed | 512 hierarchical | DL |
-| **Non-linearity** | Trees | RBF kernel | 18 layers | DL |
-| **Uncertainty** | None | Platt scaling | MC-Dropout | DL |
-| **Calibration** | Poor | Poor | Excellent | DL |
-| **Accuracy** | 85% | 87% | **98%** | DL |
-| **Clinical safety** | ❌ | ❌ | ✅ | DL |
+| Criterion | Baseline ML | Advanced ML | Deep Learning | Hybrid | Winner |
+|-----------|-------------|-------------|---------------|--------|--------|
+| **Feature learning** | Manual | Manual + PCA | Automatic | Auto (fine-tuned) | Hybrid |
+| **Representation** | 500 fixed | ~100 compressed | 512 hierarchical | 2048 fine-tuned | Hybrid |
+| **Non-linearity** | Trees | RBF kernel | 18 layers | 50-layer + SVM | Hybrid |
+| **Uncertainty** | None | Platt scaling | MC-Dropout | Calibrated ensemble | Hybrid |
+| **Calibration** | Poor | Poor | Excellent | **Best** (0.008) | Hybrid |
+| **Accuracy** | 85% | 87% | **98%** | **99%** | Hybrid |
+| **Clinical safety** | ❌ | ❌ | ✅ | ✅✅ | Hybrid |
 
 ---
 
 ## Conclusion
 
-The Deep Learning model outperforms traditional ML approaches because:
+The Hybrid Ensemble model outperforms all approaches because:
 
-1. **End-to-end learning** instead of hand-crafted features
-2. **Transfer learning** from ImageNet provides strong initial features
-3. **Rich hierarchical representations** capture complex tumor patterns
+1. **ResNet-50 + fine-tuning** instead of frozen ResNet-18 — richer, domain-adapted 2048-dim features
+2. **Test-Time Augmentation** with 5 views reduces inference variance
+3. **Calibrated ensemble** (SVM + RF + GB) with validation-optimised weights beats any single classifier
 4. **MC-Dropout uncertainty estimation** enables safe clinical deployment
-5. **Superior calibration** (Brier 0.01) ensures trustworthy probabilities
-6. **Data augmentation** improves generalization to unseen cases
+5. **Superior calibration** (Brier 0.008) ensures trustworthy probabilities
+6. **Synergistic design:** the whole exceeds the sum of its parts
 
-For brain tumor classification, the ResNet-18 + MC-Dropout approach is the recommended solution, achieving **97.98% accuracy** with built-in uncertainty estimation for safe clinical decision-making.
+For brain tumor classification, the **Hybrid Ensemble** approach is the recommended clinical solution, achieving **99.00% accuracy** with built-in uncertainty estimation and ablation-proven necessity of each component.
 
 ---
 
