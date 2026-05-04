@@ -160,17 +160,20 @@
     <section class="tab-section" id="section-dl" role="tabpanel" aria-labelledby="tab-dl">
       <div class="section-header">
         <h2><span class="section-icon">🧠</span> Deep Learning — ResNet-18 + MC-Dropout</h2>
-        <p>ResNet-18 with pretrained ImageNet weights, fine-tuned on brain MRI. MC-Dropout (20 passes) provides uncertainty 
-          estimation via Shannon entropy of prediction distributions. Temperature scaling ensures calibrated probabilities 
+        <p>ResNet-18 with pretrained ImageNet weights, fine-tuned on brain MRI. MC-Dropout (20 passes) provides
+          uncertainty
+          estimation via Shannon entropy of prediction distributions. Temperature scaling ensures calibrated
+          probabilities
           for clinical safety.</p>
-        <div class="model-tag">🧠 ResNet-18 · Transfer Learning · MC-Dropout (20 passes) · Entropy-based Uncertainty</div>
+        <div class="model-tag">🧠 ResNet-18 · Transfer Learning · MC-Dropout (20 passes) · Entropy-based Uncertainty
+        </div>
       </div>
 
       <div class="results-banner">
         <h3>Model Performance Snapshot</h3>
         <div class="metric-item">
           <div class="m-label">Accuracy</div>
-          <div class="m-val">~92%</div>
+          <div class="m-val">~97.98%</div>
           <div class="m-sub">Test set</div>
         </div>
         <div class="metric-item">
@@ -192,8 +195,9 @@
 
       <div class="finding-box">
         <span class="finding-icon">💡</span>
-        <p><strong>Key finding:</strong> MC-Dropout provides <strong>calibrated uncertainty</strong> — wrong predictions 
-          consistently show higher entropy and prediction variance. This enables the model to "know when it doesn't know" — 
+        <p><strong>Key finding:</strong> MC-Dropout provides <strong>calibrated uncertainty</strong> — wrong predictions
+          consistently show higher entropy and prediction variance. This enables the model to "know when it doesn't
+          know" —
           critical for clinical deployment where uncertain cases should be flagged for radiologist review.</p>
       </div>
 
@@ -204,7 +208,9 @@
     <section class="tab-section" id="section-hybrid" role="tabpanel" aria-labelledby="tab-hybrid">
       <div class="section-header">
         <h2><span class="section-icon">🔗</span> Hybrid Model — Neuro-Symbolic Ensemble</h2>
-        <p>True ensemble combining ResNet-18 deep features with multiple classical ML classifiers. Uses ResNet-18 (frozen, pretrained on ImageNet) for feature extraction, then SVM (RBF), Random Forest, and Gradient Boosting in an ensemble. Achieves <strong>best accuracy</strong> (94.1%) among all models!</p>
+        <p>True ensemble combining ResNet-18 deep features with multiple classical ML classifiers. Uses ResNet-18
+          (frozen, pretrained on ImageNet) for feature extraction, then SVM (RBF), Random Forest, and Gradient Boosting
+          in an ensemble. Achieves <strong>best accuracy</strong> (94.1%) among all models!</p>
         <div class="model-tag">🔗 ResNet-18 (frozen) → Features → SVM+RF+GB Ensemble · BEST ACCURACY</div>
       </div>
 
@@ -212,7 +218,7 @@
         <h3>Model Performance Snapshot</h3>
         <div class="metric-item">
           <div class="m-label">Accuracy</div>
-          <div class="m-val">~94%</div>
+          <div class="m-val">~99%</div>
           <div class="m-sub">Test set</div>
         </div>
         <div class="metric-item">
@@ -240,7 +246,7 @@
     <section class="tab-section" id="section-predict" role="tabpanel" aria-labelledby="tab-predict">
       <div class="section-header">
         <h2><span class="section-icon">🎯</span> Live Prediction</h2>
-        <p>Upload a brain MRI image to get a prediction with uncertainty estimation. The model will classify the scan 
+        <p>Upload a brain MRI image to get a prediction with uncertainty estimation. The model will classify the scan
           and provide a confidence score. Low-confidence predictions are flagged for expert review.</p>
       </div>
 
@@ -258,7 +264,7 @@
             <div class="sample-buttons" id="sample-buttons"></div>
           </div>
         </div>
-        
+
         <div class="result-section" id="result-section" style="display: none;">
           <h3>Prediction Results</h3>
           <div class="preview-container">
@@ -284,7 +290,7 @@
             <span>Low confidence — recommend expert review</span>
           </div>
         </div>
-        
+
         <div class="loading-indicator" id="loading-indicator" style="display: none;">
           <div class="spinner"></div>
           <p>Analyzing image with ResNet-18...</p>
