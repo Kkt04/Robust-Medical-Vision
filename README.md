@@ -1,6 +1,6 @@
 ## Brain Tumor MRI Classification with Uncertainty Estimation
 
-**Student:** Kalash Kumari Thakur | **Enrollment:** 230136
+**Student:** Kalash Kumari Thakur 
 
 ---
 
