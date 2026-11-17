@@ -691,13 +691,22 @@ async function predictImage(imageSource) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (!res.ok) throw new Error('Prediction failed');
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.error || 'Prediction service error');
+    }
     const prediction = await res.json();
 
     displayPrediction(prediction, imageSource);
   } catch (err) {
     console.error('Prediction error:', err);
-    showOfflineNotice();
+    if (loading) loading.style.display = 'none';
+    const isOnline = await checkServer();
+    if (!isOnline) {
+      showOfflineNotice();
+    } else {
+      displayOODNotice(imageSource, err.message || 'Image decoding error. Please verify the file is an intact JPG or PNG MRI scan.');
+    }
     return;
   }
   

@@ -156,8 +156,17 @@ def predict():
         if "," in image_data:
             image_data = image_data.split(",")[1]
 
-        image_bytes = base64.b64decode(image_data)
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        # Clean base64 string
+        image_data = image_data.strip().replace(" ", "+")
+        missing_padding = len(image_data) % 4
+        if missing_padding:
+            image_data += "=" * (4 - missing_padding)
+
+        try:
+            image_bytes = base64.b64decode(image_data)
+            image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        except Exception as img_err:
+            return jsonify({"error": f"Invalid image encoding or unsupported format: {str(img_err)}"}), 400
 
         # Modality check: verify this is an MRI scan, not a regular photo
         is_mri, message = validate_mri_modality(image)
