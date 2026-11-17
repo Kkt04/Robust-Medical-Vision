@@ -108,38 +108,33 @@ def mc_predict(model, image_tensor, n_passes=20):
 
     return mean_probs, std_probs, entropy
 
+CLASS_MAP = {
+    "glioma": "Glioma",
+    "meningioma": "Meningioma",
+    "notumor": "No Tumor",
+    "pituitary": "Pituitary",
+    "Glioma": "Glioma",
+    "Meningioma": "Meningioma",
+    "No Tumor": "No Tumor",
+    "Pituitary": "Pituitary",
+}
+
 # -------------------------------
 # Out-of-Distribution (OOD) & Modality Check
 # -------------------------------
 def validate_mri_modality(pil_img: Image.Image) -> tuple[bool, str]:
     """
     Validates whether the input image has Brain MRI scan characteristics:
-    1. Color variance check: MRI scans are monochrome / grayscale.
-    2. Background margin check: MRI scans have dark perimeter margins.
+    MRIs are monochrome/grayscale scans. Natural color photos (faces, selfies,
+    landscapes) have chromatic dispersion across RGB channels.
     """
     arr = np.array(pil_img.convert("RGB"), dtype=np.float32)
     
-    # 1. Color variance across R, G, B channels
-    channel_std = np.std(arr, axis=2).mean()
-    if channel_std > 8.0:
+    # Color variance across R, G, B channels
+    channel_std = float(np.std(arr, axis=2).mean())
+    if channel_std > 22.0:
         return False, (
-            "Detected color photograph. Brain MRI scans are grayscale scans. "
-            "This model is exclusively trained on brain MRI slices and cannot analyze personal photos."
-        )
-    
-    # 2. Check corners/perimeter (MRIs have dark corners from the scan bed/void)
-    h, w, _ = arr.shape
-    corner_size = max(4, min(h, w) // 10)
-    corners = [
-        arr[:corner_size, :corner_size],
-        arr[:corner_size, -corner_size:],
-        arr[-corner_size:, :corner_size],
-        arr[-corner_size:, -corner_size:],
-    ]
-    corner_mean = float(np.mean([c.mean() for c in corners]))
-    if corner_mean > 115.0:
-        return False, (
-            "Image background is too bright. Brain MRI scans have dark scanner field margins."
+            "Detected color photograph. Clinical brain MRI scans are monochrome diagnostic imaging slices."
         )
 
     return True, "Valid MRI"
@@ -189,9 +184,10 @@ def predict():
 
         pred_idx = int(np.argmax(probs))
 
-        # safer class retrieval
+        # Format predicted class nicely
         model_classes = checkpoint.get("classes", CLASSES)
-        predicted_class = model_classes[pred_idx]
+        raw_class = model_classes[pred_idx]
+        predicted_class = CLASS_MAP.get(raw_class, str(raw_class).title())
 
         confidence = float(probs[pred_idx])
 
