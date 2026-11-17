@@ -1,51 +1,51 @@
 const DATA = {
   eda: {
     label: 'EDA',
-    icon: '🔬',
+    code: 'EDA-01',
     title: 'Exploratory Data Analysis',
-    desc: 'Understanding the dataset before any model is trained: class balance, image properties, pixel-level statistics, and a data quality audit.',
+    desc: 'Pre-training dataset auditing: class balance validation, spatial dimensions, pixel-intensity distributions, and quality assurance.',
     modelTag: null,
     cards: [
       {
         src: 'outputs/eda/class_distribution.png',
         title: 'Class Distribution',
-        desc: 'Bar chart of image counts per class (Glioma, Meningioma, No Tumor, Pituitary). Confirms near-balanced classes so accuracy is a fair metric.',
+        desc: 'Image frequency per pathology class (Glioma, Meningioma, Healthy/No Tumor, Pituitary). Verifies class parity across test partitions.',
         tag: 'eda'
       },
       {
         src: 'outputs/eda/image_resolution.png',
-        title: 'Image Resolution',
-        desc: 'Histograms of width, height, and file size across all images. Ensures no outlier resolutions would corrupt fixed-size feature extraction.',
+        title: 'Image Resolution Distribution',
+        desc: 'Spatial distribution of image dimensions and file sizes across the dataset. Validates input bounds for downstream tensor normalization.',
         tag: 'eda'
       },
       {
         src: 'outputs/eda/pixel_intensity_stats.png',
-        title: 'Pixel Intensity Stats',
-        desc: 'Per-class boxplots of mean, std, skewness and kurtosis. Reveals that Glioma scans tend to be brighter and more variable than No-Tumor ones.',
+        title: 'Pixel Intensity Statistics',
+        desc: 'First to fourth-order moments (mean, variance, skewness, kurtosis) across scan slices, highlighting distinct pathology profiles.',
         tag: 'eda'
       },
       {
         src: 'outputs/eda/intensity_distribution.png',
-        title: 'Intensity Distribution',
-        desc: 'Overlaid KDE intensity histograms per class. Shows Meningioma overlaps heavily with No-Tumor — explaining why those two classes are harder to separate.',
+        title: 'Intensity Histogram Overlap',
+        desc: 'Estimated probability density functions of pixel intensities per class, illustrating spectral overlap between Meningioma and healthy parenchyma.',
         tag: 'eda'
       },
       {
         src: 'outputs/eda/sample_grid.png',
-        title: 'Sample Image Grid',
-        desc: 'A random sample of MRI slices from each class side-by-side. Visually confirms the structural differences used by HOG and LBP features.',
+        title: 'Pathology Slice Samples',
+        desc: 'Representative axial MRI cross-sections from each diagnostic category displaying distinct morphological signatures.',
         tag: 'eda'
       },
       {
         src: 'outputs/eda/correlation_heatmap.png',
-        title: 'Correlation Heatmap',
-        desc: 'Pearson correlation between image metadata (resolution, size, intensity stats). Low correlation validates that each feature adds independent signal.',
+        title: 'Feature Correlation Heatmap',
+        desc: 'Correlation coefficient matrix among image-level spatial and photometric metrics, verifying feature orthogonality.',
         tag: 'eda'
       },
       {
         src: 'outputs/eda/eda_quality_report.png',
-        title: 'Data Quality Report',
-        desc: 'Summary of issues found (corrupt files, duplicates, size outliers) and corrective actions taken. Documents the pipeline is clean before training.',
+        title: 'Data Quality & Artifact Audit',
+        desc: 'Quality control diagnostics covering corrupted slices, aspect ratio anomalies, and slice normalization criteria.',
         tag: 'eda'
       },
     ]
@@ -53,69 +53,69 @@ const DATA = {
 
   bml: {
     label: 'BML',
-    icon: '🌲',
-    title: 'Baseline ML — Random Forest',
-    desc: 'A Random Forest (200 trees, class-balanced) trained on hand-crafted image features: HOG edges, LBP textures, GLCM patterns, and intensity statistics (~370 dimensions total).',
-    modelTag: 'Random Forest · n=200 trees · Features: HOG + LBP + GLCM + Intensity (~370d) · Uncertainty: Shannon Entropy',
+    code: 'BML-02',
+    title: 'Baseline Machine Learning (Random Forest)',
+    desc: 'Ensemble of 200 balanced decision trees trained on 370 handcrafted feature vectors: HOG edge gradients, Local Binary Patterns (LBP), GLCM matrices, and photometric moments.',
+    modelTag: 'Random Forest · n=200 · Handcrafted Features (HOG + LBP + GLCM, ~370d) · Shannon Entropy Uncertainty',
     cards: [
       {
         src: 'outputs/bml/bml_hog_visualization.png',
-        title: 'HOG Feature Visualisation',
-        desc: 'Histogram of Oriented Gradients edge maps overlaid on sample MRIs per class. Shows which structural edges the model uses to distinguish tumour shapes.',
+        title: 'HOG Gradient Descriptors',
+        desc: 'Histogram of Oriented Gradients spatial maps per class, capturing tumor margin curvature and boundary sharpness.',
         tag: 'bml'
       },
       {
         src: 'outputs/bml/bml_lbp_visualization.png',
-        title: 'LBP Feature Visualisation',
-        desc: 'Local Binary Pattern texture maps and their histograms. LBP captures microstructure differences between tumour tissue and healthy brain matter.',
+        title: 'LBP Texture Descriptors',
+        desc: 'Microstructure texture histograms derived from circular Local Binary Patterns comparing homogeneous vs heterogeneous tissue.',
         tag: 'bml'
       },
       {
         src: 'outputs/bml/bml_feature_summary.png',
-        title: 'Feature Summary',
-        desc: 'All extracted features plotted by class. Confirms HOG, LBP, GLCM and intensity stats each carry discriminative signal before training starts.',
+        title: 'Feature Space Summary',
+        desc: 'Normalized comparative feature responses across all four classes prior to classification.',
         tag: 'bml'
       },
       {
         src: 'outputs/bml/bml_confusion_matrix.png',
-        title: 'Confusion Matrix',
-        desc: 'Random Forest predictions vs ground truth. Most errors occur at the Glioma ↔ Meningioma boundary — both have irregular tissue but different malignancy.',
+        title: 'BML Confusion Matrix',
+        desc: 'Random Forest classification performance on the held-out test partition. Main misclassification occurs along the Glioma-Meningioma boundary.',
         tag: 'bml'
       },
       {
         src: 'outputs/bml/bml_per_class_report.png',
-        title: 'Per-Class Metrics',
-        desc: 'Precision, Recall and F1 for each class. Pituitary and No-Tumor achieve the highest F1; Meningioma is the hardest class due to visual similarity with healthy tissue.',
+        title: 'Class-Specific Precision & Recall',
+        desc: 'Detailed breakdown of Precision, Recall, and F1 metrics across diagnostic targets.',
         tag: 'bml'
       },
       {
         src: 'outputs/bml/bml_confidence_distribution.png',
-        title: 'Confidence Distribution',
-        desc: 'Density of max-class probability for correct vs wrong predictions. Correctly classified samples cluster near 1.0; errors concentrate below 0.6.',
+        title: 'Probability Confidence Profiles',
+        desc: 'Separation of max probability density between true positives and misclassifications.',
         tag: 'bml'
       },
       {
         src: 'outputs/bml/bml_entropy_analysis.png',
-        title: 'Entropy Analysis',
-        desc: 'Shannon entropy per class. Wrong predictions show measurably higher entropy — validating that uncertainty is a reliable signal for flagging cases for radiologist review.',
+        title: 'Shannon Entropy Distribution',
+        desc: 'Empirical entropy density: ambiguous slices exhibit elevated entropy, enabling safe second-opinion routing.',
         tag: 'bml'
       },
       {
         src: 'outputs/bml/bml_calibration_curve.png',
-        title: 'Calibration Curve',
-        desc: 'Reliability diagram comparing predicted probability vs actual accuracy. Random Forest is slightly overconfident — motivating Platt scaling in AML.',
+        title: 'Reliability Diagram',
+        desc: 'Observed empirical frequency versus predicted confidence demonstrating baseline overconfidence.',
         tag: 'bml'
       },
       {
         src: 'outputs/bml/bml_uncertainty_threshold.png',
-        title: 'Uncertainty Threshold Analysis',
-        desc: 'Accuracy and coverage as entropy threshold varies. Shows the clinical trade-off: at higher thresholds the model is more accurate but defers more cases.',
+        title: 'Coverage vs. Accuracy Tradeoff',
+        desc: 'Selective classification curve showing performance gains achieved by abstaining on high-entropy slices.',
         tag: 'bml'
       },
       {
         src: 'outputs/bml/bml_feature_importance.png',
-        title: 'Feature Importance (Top 30)',
-        desc: 'Gini-weighted importance of the top 30 features from the Random Forest. HOG gradient bins dominate, confirming edge shape is the primary discriminating signal.',
+        title: 'Top 30 Gini Feature Importances',
+        desc: 'Relative contribution of individual descriptor dimensions in Random Forest tree splits.',
         tag: 'bml'
       },
     ]
@@ -123,69 +123,69 @@ const DATA = {
 
   aml: {
     label: 'AML',
-    icon: '⚡',
-    title: 'Advanced ML — SVM + PCA + Platt Scaling',
-    desc: 'SVM with RBF kernel (C=10) applied in PCA-compressed space (retaining 95% variance). Platt Scaling converts SVM scores to calibrated probabilities. Entropy-based uncertainty flags ambiguous scans.',
-    modelTag: 'SVM (RBF, C=10) · PCA 95% variance · Platt Calibration · Uncertainty: Calibrated Entropy',
+    code: 'AML-03',
+    title: 'Advanced Machine Learning (SVM + PCA + Platt Calibration)',
+    desc: 'Radial Basis Function (RBF) Support Vector Machine projected into a 95% variance PCA manifold, coupled with 3-fold cross-validated Platt scaling for calibrated posterior probabilities.',
+    modelTag: 'SVM (RBF Kernel, C=10) · PCA (95% Var) · Platt Calibration · Calibrated Entropy',
     cards: [
       {
         src: 'outputs/aml/aml_pca_variance.png',
-        title: 'PCA Variance Plot',
-        desc: 'Cumulative explained variance and scree plot. Shows how many components are needed to retain 95% of the information in the ~370-dimensional feature space.',
+        title: 'Cumulative Explained Variance',
+        desc: 'Scree plot and cumulative variance ratio across principal orthogonal components.',
         tag: 'aml'
       },
       {
         src: 'outputs/aml/aml_pca_2d.png',
-        title: 'PCA 2D Scatter',
-        desc: 'All training samples projected onto the first two principal components, coloured by class. Visualises how well PCA separates the four tumour types.',
+        title: '2D Latent Projection',
+        desc: 'First two principal components demonstrating non-linear class separability in reduced dimension.',
         tag: 'aml'
       },
       {
         src: 'outputs/aml/aml_svm_confusion_matrix.png',
-        title: 'SVM Confusion Matrix',
-        desc: 'SVM + PCA predictions vs ground truth. Compare with the BML matrix — AML reduces Glioma ↔ Meningioma confusions by leveraging the maximum-margin boundary in PCA space.',
+        title: 'AML Confusion Matrix',
+        desc: 'Support Vector Machine classification results displaying improved discrimination along non-linear margins.',
         tag: 'aml'
       },
       {
         src: 'outputs/aml/aml_per_class_report.png',
-        title: 'Per-Class Metrics',
-        desc: 'Precision, Recall and F1 for the SVM model. Overall Macro F1 ~0.85 vs ~0.83 for Random Forest — the SVM closes the gap on hard classes.',
+        title: 'Per-Class Diagnostic Metrics',
+        desc: 'Precision, Recall, and Macro F1 summary demonstrating performance gains over Random Forest.',
         tag: 'aml'
       },
       {
         src: 'outputs/aml/aml_confidence_distribution.png',
-        title: 'Confidence Distribution',
-        desc: 'Platt-calibrated probability distributions for correct vs wrong SVM predictions. Better separation than BML — calibration improves uncertainty reliability.',
+        title: 'Calibrated Confidence Density',
+        desc: 'Post-Platt scaling probability distributions showing enhanced separation between correct and incorrect classifications.',
         tag: 'aml'
       },
       {
         src: 'outputs/aml/aml_entropy_analysis.png',
-        title: 'Entropy Analysis',
-        desc: 'Shannon entropy per class after Platt calibration. Entropy remains a strong proxy for correctness — high-entropy cases cluster around misclassified samples.',
+        title: 'Calibrated Entropy by Class',
+        desc: 'Shannon entropy computed on calibrated probabilities illustrating reliable ambiguity flagging.',
         tag: 'aml'
       },
       {
         src: 'outputs/aml/aml_calibration_curve.png',
-        title: 'Calibration Curve (Platt)',
-        desc: 'Reliability diagram for the SVM after Platt Scaling. The calibration curve tracks the diagonal more closely than Random Forest — probabilities are more trustworthy.',
+        title: 'Platt Calibration Reliability Diagram',
+        desc: 'Empirical reliability curve confirming improved calibration relative to the ideal diagonal.',
         tag: 'aml'
       },
       {
         src: 'outputs/aml/aml_uncertainty_threshold.png',
-        title: 'Uncertainty Threshold Analysis',
-        desc: 'Same threshold sweep as BML but for the SVM. AML achieves higher accuracy at the same coverage level — proving it is a safer clinical tool.',
+        title: 'Accuracy vs. Coverage Evaluation',
+        desc: 'Selective prediction metrics across threshold sweeps under calibrated uncertainty.',
         tag: 'aml'
       },
       {
         src: 'outputs/aml/aml_decision_boundary_pca.png',
-        title: 'Decision Boundary (PCA-2D)',
-        desc: 'SVM decision regions visualised in the 2-component PCA projection. Illustrates the non-linear RBF boundary that separates Glioma from Meningioma.',
+        title: 'RBF Margin Decision Surfaces',
+        desc: '2D projection of the RBF kernel decision boundary illustrating margin geometry between tumor classes.',
         tag: 'aml'
       },
       {
         src: 'outputs/aml/aml_bml_comparison.png',
-        title: 'BML vs AML Comparison',
-        desc: 'Side-by-side bar chart of Accuracy, Macro F1 and Brier Score for both models. Summarises the overall improvement from Random Forest to SVM + PCA.',
+        title: 'BML vs. AML Performance Comparison',
+        desc: 'Comparative benchmark across Accuracy, Macro F1, and Brier Score metrics.',
         tag: 'aml'
       },
     ]
@@ -193,81 +193,81 @@ const DATA = {
 
   dl: {
     label: 'DL',
-    icon: '🧠',
-    title: 'Deep Learning — ResNet-18 + MC-Dropout',
-    desc: 'ResNet-18 pretrained on ImageNet, fine-tuned on brain MRI with MC-Dropout (20 forward passes) for uncertainty estimation via Shannon entropy.',
-    modelTag: 'ResNet-18 · Transfer Learning · MC-Dropout (20 passes) · Entropy-based Uncertainty',
+    code: 'DL-04',
+    title: 'Deep Learning (ResNet-18 with Monte Carlo Dropout)',
+    desc: 'Pretrained deep residual network fine-tuned with spatial augmentations and 20-pass Monte Carlo Dropout during inference to model epistemic uncertainty directly in feature representations.',
+    modelTag: 'ResNet-18 · Transfer Learning · 20-Pass MC-Dropout · Epistemic Uncertainty Estimation',
     cards: [
       {
         src: 'outputs/dl/dl_training_curves.png',
-        title: 'Training Curves',
-        desc: 'Loss and accuracy over 15 epochs. Shows stable convergence with early stopping at ~10 epochs.',
+        title: 'Training Convergence Dynamics',
+        desc: 'Cross-entropy loss and top-1 accuracy curves across training and validation epochs.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_confusion_matrix.png',
-        title: 'Confusion Matrix',
-        desc: 'ResNet-18 predictions vs ground truth. DL significantly reduces Glioma ↔ Meningioma confusion compared to traditional ML.',
+        title: 'Deep Learning Confusion Matrix',
+        desc: 'Test partition evaluation confirming significant reduction in boundary confusion.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_per_class_metrics.png',
-        title: 'Per-Class Metrics',
-        desc: 'Precision, Recall and F1 for all four classes. DL achieves ~0.90+ F1 across all classes.',
+        title: 'Diagnostic Sensitivity & Specificity',
+        desc: 'Precision, Recall, and F1 scores demonstrating consistent multi-class discrimination.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_confidence_distribution.png',
-        title: 'Confidence Distribution',
-        desc: 'MC-Dropout mean probability and entropy for correct vs wrong predictions. Clear separation validates uncertainty reliability.',
+        title: 'MC-Dropout Confidence Distribution',
+        desc: 'Stochastic forward-pass mean confidence for verified versus misclassified slices.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_entropy_analysis.png',
-        title: 'Entropy Analysis',
-        desc: 'Shannon entropy per class. Wrong predictions consistently show higher entropy — enabling reliable flagging.',
+        title: 'Predictive Entropy Profile',
+        desc: 'Entropy distributions indicating high diagnostic certainty on canonical MRI slices.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_calibration_curve.png',
-        title: 'Calibration Curve',
-        desc: 'Reliability diagram showing well-calibrated probabilities. Brier score ~0.05 indicates trustworthy confidence.',
+        title: 'Deep Learning Calibration Curve',
+        desc: 'Evaluation of model reliability showing low expected calibration error (ECE).',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_uncertainty_threshold.png',
-        title: 'Uncertainty Threshold Analysis',
-        desc: 'Accuracy vs coverage trade-off at different confidence thresholds. Enables clinical decision on automation vs safety.',
+        title: 'Abstention vs. Precision Curve',
+        desc: 'Clinical referral threshold analysis illustrating accuracy gains at 90% coverage.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_mc_dropout_uncertainty.png',
-        title: 'MC-Dropout Uncertainty',
-        desc: 'Prediction std vs entropy from 20 MC-Dropout passes. Wrong predictions cluster in high-uncertainty region.',
+        title: 'Stochastic Variance vs. Entropy',
+        desc: 'Correlation between predictive variance across 20 stochastic passes and total Shannon entropy.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_ood_detection.png',
-        title: 'OOD Detection',
-        desc: 'Entropy-based out-of-distribution detection. High-entropy samples can be flagged for expert review.',
+        title: 'Out-of-Distribution Rejection Profile',
+        desc: 'Behavior of predictive entropy on anomalous and out-of-distribution inputs.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_bml_aml_dl_comparison.png',
-        title: 'BML vs AML vs DL Comparison',
-        desc: 'Side-by-side comparison of all three model families. DL achieves SOTA ~92% accuracy with best calibration.',
+        title: 'Tri-Phase Model Comparison',
+        desc: 'Comprehensive performance benchmark comparing Random Forest, SVM, and ResNet-18.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_learning_rate_schedule.png',
-        title: 'Learning Rate Schedule',
-        desc: 'OneCycleLR schedule: warmup → peak → decay. Optimal for transfer learning on medical images.',
+        title: 'Optimization Policy',
+        desc: 'Cyclic cosine annealing learning rate schedule utilized during transfer learning.',
         tag: 'dl'
       },
       {
         src: 'outputs/dl/dl_feature_maps.png',
-        title: 'Feature Maps',
-        desc: 'First convolutional layer activation maps showing edge detection at tumour boundaries.',
+        title: 'First-Layer Activation Maps',
+        desc: 'Early convolutional filter responses highlighting edge and tissue boundary detection.',
         tag: 'dl'
       },
     ]
@@ -275,27 +275,33 @@ const DATA = {
 
   hybrid: {
     label: 'Hybrid',
-    icon: '🔗',
-    title: 'Hybrid Model — Neuro-Symbolic Ensemble',
-    desc: 'ResNet-18 features + ensemble (SVM + RF + GB). Achieves 94.1% accuracy — BEST of all models!',
-    modelTag: 'ResNet-18 (frozen) → Features → SVM+RF+GB Ensemble · BEST ACCURACY',
+    code: 'HYB-05',
+    title: 'Neuro-Symbolic Hybrid Architecture',
+    desc: 'Synergistic pipeline coupling fine-tuned ResNet-50 feature representations (2048d) with a validation-weighted classifier ensemble (SVM + RF + GB) and 5-view Test-Time Augmentation.',
+    modelTag: 'ResNet-50 Features (2048d) → PCA (98%) → Calibrated Ensemble + 5-View TTA · Optimal Performance',
     cards: [
       {
+        src: 'outputs/hybrid/architecture_diagram.png',
+        title: 'Formal Architecture Schematic',
+        desc: 'Complete data flow from raw MRI tensor through multi-view TTA, convolutional feature extraction, PCA compression, and ensemble inference.',
+        tag: 'hybrid'
+      },
+      {
         src: 'outputs/hybrid/hybrid_comparison.png',
-        title: 'Model Comparison',
-        desc: 'All models compared: BML, AML, DL, and Hybrid. Hybrid wins with highest accuracy.',
+        title: 'Comprehensive Benchmark Comparison',
+        desc: 'Cross-model comparison establishing superior accuracy and calibration of the hybrid ensemble.',
         tag: 'hybrid'
       },
       {
         src: 'outputs/hybrid/hybrid_confusion_matrix.png',
-        title: 'Confusion Matrix',
-        desc: 'Hybrid ensemble predictions vs ground truth. Strong performance across all classes.',
+        title: 'Hybrid Confusion Matrix',
+        desc: 'Confusion matrix demonstrating near-zero misclassification across all four pathology classes.',
         tag: 'hybrid'
       },
       {
         src: 'outputs/hybrid/hybrid_per_class.png',
-        title: 'Per-Class Metrics',
-        desc: 'Precision, Recall and F1 for each class. ~94% F1 across all classes.',
+        title: 'Class-Wise Metric Summary',
+        desc: 'Sensitivity and positive predictive values achieved by the calibrated ensemble.',
         tag: 'hybrid'
       },
     ]
@@ -316,7 +322,7 @@ function renderSection(key) {
     div.innerHTML = `
       <div class="card-img-wrap">
         <img src="${card.src}" alt="${card.title}" loading="lazy" />
-        <div class="card-zoom-hint"><div class="zoom-icon">🔍</div></div>
+        <div class="card-zoom-hint"><span class="zoom-text">Inspect Visualization</span></div>
         <span class="card-tag tag-${card.tag}">${card.tag.toUpperCase()}</span>
       </div>
       <div class="card-body">
@@ -371,7 +377,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 switchTab('eda');
 
 // ══════════════════════════════════════════════════════
-// PREDICTION FUNCTIONALITY
+// PREDICTION & DIAGNOSTIC VALIDATION
 // ══════════════════════════════════════════════════════
 
 const SAMPLE_IMAGES = [
@@ -388,9 +394,10 @@ function initPrediction() {
   const sampleButtons = document.getElementById('sample-buttons');
   if (!sampleButtons) return;
   
-  SAMPLE_IMAGES.forEach((sample, idx) => {
+  SAMPLE_IMAGES.forEach((sample) => {
     const btn = document.createElement('button');
     btn.className = 'sample-btn';
+    btn.type = 'button';
     btn.innerHTML = `<span class="sample-label">${sample.class}</span>`;
     btn.onclick = () => loadSampleImage(sample.path);
     sampleButtons.appendChild(btn);
@@ -421,7 +428,7 @@ function loadSampleImage(path) {
   predictImage(path);
 }
 
-// Check if an image is a color photo (not a brain MRI scan)
+// Client-side verification: checks if the input is a valid grayscale MRI scan
 function checkIsMRI(imgElement) {
   try {
     const canvas = document.createElement('canvas');
@@ -432,23 +439,21 @@ function checkIsMRI(imgElement) {
     const imgData = ctx.getImageData(0, 0, 64, 64).data;
     
     let totalColorDiff = 0;
-    let pixelCount = 64 * 64;
+    const pixelCount = 64 * 64;
     
     for (let i = 0; i < imgData.length; i += 4) {
       const r = imgData[i];
       const g = imgData[i + 1];
       const b = imgData[i + 2];
-      // Grayscale images have R ≈ G ≈ B
       const diff = Math.abs(r - g) + Math.abs(g - b) + Math.abs(b - r);
       totalColorDiff += diff;
     }
     
     const avgColorDiff = totalColorDiff / pixelCount;
-    // Real brain MRI scans have avgColorDiff < 6. Color photos have > 15-40
     if (avgColorDiff > 12) {
       return {
         isMRI: false,
-        reason: 'Detected color photograph. Brain MRI scans are grayscale scans of brain tissue.'
+        reason: 'Detected natural color photography. Clinical brain MRI scans are monochrome diagnostic imaging slices.'
       };
     }
     return { isMRI: true };
@@ -459,7 +464,7 @@ function checkIsMRI(imgElement) {
 
 function handleFile(file) {
   if (!file.type.startsWith('image/')) {
-    alert('Please select an image file');
+    alert('Please select an image file (DICOM export, PNG, or JPG)');
     return;
   }
   const reader = new FileReader();
@@ -501,31 +506,29 @@ function displayOODNotice(imageSource, reason) {
   
   if (predClass) {
     predClass.innerHTML = `
-      <span class="class-label">Input Status:</span>
-      <span class="class-name" style="color: #4ade80;">Non-MRI / Normal Photo</span>
+      <span class="class-label">Input Validation Status:</span>
+      <span class="class-name status-ood">Out-of-Distribution (Non-MRI)</span>
     `;
   }
   
   if (confScore) {
     confScore.innerHTML = `
-      <span class="conf-label">Diagnosis:</span>
-      <span class="conf-value" style="color: #94a3b8; font-size: 1rem;">No Scan Detected (Invalid Input)</span>
+      <span class="conf-label">Diagnostic Decision:</span>
+      <span class="conf-value status-abstain">Classification Rejected</span>
     `;
   }
   
-  if (entropyVal) entropyVal.textContent = 'N/A (OOD)';
+  if (entropyVal) entropyVal.textContent = 'Indeterminate (OOD)';
   if (stdVal) stdVal.textContent = 'N/A';
   
   if (classProbs) {
     classProbs.innerHTML = `
-      <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 18px; margin-top: 15px;">
-        <h4 style="margin: 0 0 8px; color: #60a5fa; display: flex; align-items: center; gap: 8px;">
-          <span>ℹ️</span> Out-of-Distribution Input (Not an MRI)
-        </h4>
-        <p style="margin: 0; color: #cbd5e1; font-size: 0.92rem; line-height: 1.6;">
-          <strong>You are completely fine!</strong> ${reason}<br><br>
-          This AI model is trained <em>exclusively</em> on axial/coronal brain MRI slice scans. It cannot read or diagnose personal photos or selfies.
-        </p>
+      <div class="ood-banner">
+        <div class="ood-title">Modality Mismatch Rejection</div>
+        <div class="ood-body">
+          ${reason}<br><br>
+          <strong>Safety Policy:</strong> The model strictly classifies axial/coronal brain MRI scans. Arbitrary photographic inputs are filtered out to prevent false medical classifications.
+        </div>
       </div>
     `;
   }
@@ -534,7 +537,7 @@ function displayOODNotice(imageSource, reason) {
 }
 
 const API_URL = 'http://localhost:5001';
-let serverAvailable = null; // null = unknown, true/false after first check
+let serverAvailable = null;
 
 async function checkServer() {
   if (serverAvailable !== null) return serverAvailable;
@@ -552,28 +555,22 @@ function showOfflineNotice() {
   if (banner) return;
   banner = document.createElement('div');
   banner.id = 'server-offline-banner';
-  banner.style.cssText = 'background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #e74c3c55;border-radius:14px;padding:24px 28px;margin:0 0 24px;text-align:center;';
+  banner.className = 'offline-card';
   banner.innerHTML = `
-    <div style="font-size:2.5rem;margin-bottom:8px">🔒</div>
-    <strong style="color:#ff6b6b;font-size:1.15rem">Inference Server Offline</strong>
-    <p style="margin:10px 0 0;color:#aaa;font-size:0.95rem;line-height:1.6;max-width:520px;margin-left:auto;margin-right:auto">
-      Live predictions require the Flask backend running on your machine.<br>
-      To try it out, clone the repo and run:
+    <div class="offline-badge">Local Inference Service Inactive</div>
+    <div class="offline-title">Flask Backend Required for Live Inferences</div>
+    <p class="offline-text">
+      The static web deployment hosts precomputed model documentation and benchmarks. 
+      To evaluate custom MRI slices against the fine-tuned ResNet-18 checkpoint:
     </p>
-    <div style="margin:14px auto 0;display:inline-block;text-align:left">
-      <code style="display:block;background:#0d0d1a;padding:10px 16px;border-radius:8px;color:#ffd600;font-size:0.9rem;line-height:1.7">
-        git clone https://github.com/Kkt04/Robust-Medical-Vision.git<br>
-        cd Robust-Medical-Vision<br>
-        pip install -r requirements.txt<br>
-        python3 server.py
-      </code>
+    <div class="cli-block">
+      <code>python3 server.py</code>
     </div>
-    <p style="margin:14px 0 0;color:#666;font-size:0.8rem">Then open <strong style="color:#888">index.html</strong> from your local copy.</p>
+    <div class="offline-sub">Service will bind to http://localhost:5001. All visualization suites remain fully accessible above.</div>
   `;
   const container = document.querySelector('#section-predict .prediction-container');
   if (container) container.prepend(banner);
 
-  // Hide upload and sample buttons when offline
   const uploadSection = document.querySelector('#section-predict .upload-section');
   if (uploadSection) uploadSection.style.display = 'none';
 }
@@ -627,11 +624,9 @@ async function predictImage(imageSource) {
   if (resultSection) resultSection.style.display = 'block';
 }
 
-
-
 function displayPrediction(pred, imageSource) {
   if (pred.is_mri === false) {
-    displayOODNotice(imageSource, pred.error || "Uploaded image is not a brain MRI scan.");
+    displayOODNotice(imageSource, pred.error || "Input rejected: non-MRI image detected.");
     return;
   }
   const preview = document.getElementById('preview-image');
@@ -646,14 +641,14 @@ function displayPrediction(pred, imageSource) {
   
   if (predClass) {
     predClass.innerHTML = `
-      <span class="class-label">Predicted Class:</span>
+      <span class="class-label">Predicted Pathology:</span>
       <span class="class-name">${pred.predictedClass}</span>
     `;
   }
   
   if (confScore) {
     confScore.innerHTML = `
-      <span class="conf-label">Confidence:</span>
+      <span class="conf-label">Posterior Confidence:</span>
       <span class="conf-value">${(pred.confidence * 100).toFixed(1)}%</span>
     `;
   }
@@ -668,7 +663,7 @@ function displayPrediction(pred, imageSource) {
         <div class="prob-item">
           <span class="prob-label">${CLASSES[i]}</span>
           <div class="prob-bar-bg">
-            <div class="prob-bar-fill" style="width: ${p * 100}%; background: ${['#1f1f1f','#555555','#888888','#bbbbbb'][i]}"></div>
+            <div class="prob-bar-fill" style="width: ${p * 100}%;"></div>
           </div>
           <span class="prob-value">${(p * 100).toFixed(1)}%</span>
         </div>
