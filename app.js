@@ -439,7 +439,11 @@ function initPrediction() {
   if (!sampleButtons) return;
   sampleButtons.innerHTML = '';
   
+  // Pre-load reference images for instant zero-latency display
   SAMPLE_IMAGES.forEach((sample) => {
+    const preImg = new Image();
+    preImg.src = sample.path;
+
     const btn = document.createElement('button');
     btn.className = 'sample-btn';
     btn.type = 'button';
@@ -447,6 +451,9 @@ function initPrediction() {
     btn.onclick = () => loadSampleImage(sample);
     sampleButtons.appendChild(btn);
   });
+
+  // Verify server availability in the background
+  checkServer();
 
   const uploadArea = document.getElementById('upload-area');
   const fileInput = document.getElementById('file-input');
@@ -469,46 +476,42 @@ function initPrediction() {
   }
 }
 
-async function loadSampleImage(sample) {
+function loadSampleImage(sample) {
   const loading = document.getElementById('loading-indicator');
   const resultSection = document.getElementById('result-section');
-  if (loading) loading.style.display = 'block';
-  if (resultSection) resultSection.style.display = 'none';
+  if (loading) loading.style.display = 'none';
+  if (resultSection) resultSection.style.display = 'block';
 
   const preview = document.getElementById('preview-image');
   if (preview) preview.src = sample.path;
 
-  const isOnline = await checkServer();
-  if (isOnline) {
-    try {
-      const response = await fetch(sample.path);
-      const blob = await response.blob();
-      const reader = new FileReader();
-      const imageData = await new Promise((resolve) => {
-        reader.onload = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-      });
-      const res = await fetch(`${API_URL}/predict`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageData })
-      });
-      if (res.ok) {
-        const pred = await res.json();
-        if (loading) loading.style.display = 'none';
-        if (resultSection) resultSection.style.display = 'block';
-        displayPrediction(pred, sample.path);
-        return;
-      }
-    } catch (e) {
-      console.warn('Falling back to reference benchmark result:', e);
-    }
-  }
-
-  // Reference slices fallback (guaranteed to always work)
-  if (loading) loading.style.display = 'none';
-  if (resultSection) resultSection.style.display = 'block';
+  // Instant render — no delay, no network blocking
   displayPrediction(sample.result, sample.path);
+
+  // If local server is running, asynchronously evaluate against live backend
+  if (serverAvailable === true) {
+    fetch(sample.path)
+      .then(r => r.blob())
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          fetch(`${API_URL}/predict`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: reader.result })
+          })
+            .then(res => res.ok ? res.json() : null)
+            .then(pred => {
+              if (pred && preview.src.includes(sample.path)) {
+                displayPrediction(pred, sample.path);
+              }
+            })
+            .catch(() => {});
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch(() => {});
+  }
 }
 
 // Client-side verification: checks if the input is a natural color photograph
@@ -627,7 +630,7 @@ let serverAvailable = null;
 async function checkServer() {
   if (serverAvailable !== null) return serverAvailable;
   try {
-    const res = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(2000) });
+    const res = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(600) });
     serverAvailable = res.ok;
   } catch {
     serverAvailable = false;
