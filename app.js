@@ -436,6 +436,40 @@ function handleFile(file) {
 }
 
 const API_URL = 'http://localhost:5001';
+let serverAvailable = null; // null = unknown, true/false after first check
+
+async function checkServer() {
+  if (serverAvailable !== null) return serverAvailable;
+  try {
+    const res = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(2000) });
+    serverAvailable = res.ok;
+  } catch {
+    serverAvailable = false;
+  }
+  return serverAvailable;
+}
+
+function showServerBanner(show) {
+  let banner = document.getElementById('server-offline-banner');
+  if (show && !banner) {
+    banner = document.createElement('div');
+    banner.id = 'server-offline-banner';
+    banner.style.cssText = 'background:#1a1a2e;border:1px solid #ffd60033;border-radius:12px;padding:16px 20px;margin:0 0 20px;display:flex;align-items:flex-start;gap:12px;';
+    banner.innerHTML = `
+      <span style="font-size:1.5rem;line-height:1">ℹ️</span>
+      <div>
+        <strong style="color:#ffd600">Demo Mode</strong>
+        <p style="margin:4px 0 0;color:#aaa;font-size:0.9rem;line-height:1.5">
+          The inference server is not running. Predictions below use <strong style="color:#ccc">simulated probabilities</strong> for demonstration.<br>
+          For real predictions, run <code style="background:#0d0d1a;padding:2px 6px;border-radius:4px;color:#ffd600">python3 server.py</code> locally and open <code style="background:#0d0d1a;padding:2px 6px;border-radius:4px;color:#ffd600">index.html</code> from your machine.
+        </p>
+      </div>
+    `;
+    const container = document.querySelector('#section-predict .prediction-container');
+    if (container) container.prepend(banner);
+  }
+  if (!show && banner) banner.remove();
+}
 
 async function predictImage(imageSource) {
   const loading = document.getElementById('loading-indicator');
@@ -444,6 +478,8 @@ async function predictImage(imageSource) {
   if (loading) loading.style.display = 'block';
   if (resultSection) resultSection.style.display = 'none';
   
+  const isOnline = await checkServer();
+
   try {
     let imageData;
     if (imageSource.startsWith('data:')) {
@@ -457,21 +493,30 @@ async function predictImage(imageSource) {
         reader.readAsDataURL(blob);
       });
     }
-    
-    const payload = { image: imageData };
-    const res = await fetch(`${API_URL}/predict`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    
-    if (!res.ok) throw new Error('Prediction failed');
-    const prediction = await res.json();
-    
-    displayPrediction(prediction, imageSource);
+
+    let prediction;
+
+    if (isOnline) {
+      showServerBanner(false);
+      const payload = { image: imageData };
+      const res = await fetch(`${API_URL}/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Prediction failed');
+      prediction = await res.json();
+    } else {
+      showServerBanner(true);
+      prediction = generateMockPrediction();
+    }
+
+    displayPrediction(prediction, imageSource.startsWith('data:') ? imageSource : imageSource);
   } catch (err) {
     console.error('Prediction error:', err);
-    alert('Failed to load model. Please ensure server.py is running: python server.py');
+    showServerBanner(true);
+    const mockPred = generateMockPrediction();
+    displayPrediction(mockPred, imageSource);
   }
   
   if (loading) loading.style.display = 'none';
