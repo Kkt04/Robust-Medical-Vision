@@ -421,6 +421,42 @@ function loadSampleImage(path) {
   predictImage(path);
 }
 
+// Check if an image is a color photo (not a brain MRI scan)
+function checkIsMRI(imgElement) {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imgElement, 0, 0, 64, 64);
+    const imgData = ctx.getImageData(0, 0, 64, 64).data;
+    
+    let totalColorDiff = 0;
+    let pixelCount = 64 * 64;
+    
+    for (let i = 0; i < imgData.length; i += 4) {
+      const r = imgData[i];
+      const g = imgData[i + 1];
+      const b = imgData[i + 2];
+      // Grayscale images have R ≈ G ≈ B
+      const diff = Math.abs(r - g) + Math.abs(g - b) + Math.abs(b - r);
+      totalColorDiff += diff;
+    }
+    
+    const avgColorDiff = totalColorDiff / pixelCount;
+    // Real brain MRI scans have avgColorDiff < 6. Color photos have > 15-40
+    if (avgColorDiff > 12) {
+      return {
+        isMRI: false,
+        reason: 'Detected color photograph. Brain MRI scans are grayscale scans of brain tissue.'
+      };
+    }
+    return { isMRI: true };
+  } catch (e) {
+    return { isMRI: true };
+  }
+}
+
 function handleFile(file) {
   if (!file.type.startsWith('image/')) {
     alert('Please select an image file');
@@ -430,9 +466,71 @@ function handleFile(file) {
   reader.onload = e => {
     const preview = document.getElementById('preview-image');
     if (preview) preview.src = e.target.result;
-    predictImage(URL.createObjectURL(file));
+    
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      const validation = checkIsMRI(tempImg);
+      if (!validation.isMRI) {
+        displayOODNotice(e.target.result, validation.reason);
+        return;
+      }
+      predictImage(e.target.result);
+    };
+    tempImg.src = e.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+function displayOODNotice(imageSource, reason) {
+  const loading = document.getElementById('loading-indicator');
+  if (loading) loading.style.display = 'none';
+  
+  const resultSection = document.getElementById('result-section');
+  if (!resultSection) return;
+  resultSection.style.display = 'block';
+  
+  const preview = document.getElementById('preview-image');
+  if (preview) preview.src = imageSource;
+  
+  const predClass = document.getElementById('predicted-class');
+  const confScore = document.getElementById('confidence-score');
+  const entropyVal = document.getElementById('entropy-value');
+  const stdVal = document.getElementById('std-value');
+  const classProbs = document.getElementById('class-probabilities');
+  const safetyWarning = document.getElementById('safety-warning');
+  
+  if (predClass) {
+    predClass.innerHTML = `
+      <span class="class-label">Input Status:</span>
+      <span class="class-name" style="color: #4ade80;">Non-MRI / Normal Photo</span>
+    `;
+  }
+  
+  if (confScore) {
+    confScore.innerHTML = `
+      <span class="conf-label">Diagnosis:</span>
+      <span class="conf-value" style="color: #94a3b8; font-size: 1rem;">No Scan Detected (Invalid Input)</span>
+    `;
+  }
+  
+  if (entropyVal) entropyVal.textContent = 'N/A (OOD)';
+  if (stdVal) stdVal.textContent = 'N/A';
+  
+  if (classProbs) {
+    classProbs.innerHTML = `
+      <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 18px; margin-top: 15px;">
+        <h4 style="margin: 0 0 8px; color: #60a5fa; display: flex; align-items: center; gap: 8px;">
+          <span>ℹ️</span> Out-of-Distribution Input (Not an MRI)
+        </h4>
+        <p style="margin: 0; color: #cbd5e1; font-size: 0.92rem; line-height: 1.6;">
+          <strong>You are completely fine!</strong> ${reason}<br><br>
+          This AI model is trained <em>exclusively</em> on axial/coronal brain MRI slice scans. It cannot read or diagnose personal photos or selfies.
+        </p>
+      </div>
+    `;
+  }
+  
+  if (safetyWarning) safetyWarning.style.display = 'none';
 }
 
 const API_URL = 'http://localhost:5001';
@@ -449,26 +547,35 @@ async function checkServer() {
   return serverAvailable;
 }
 
-function showServerBanner(show) {
+function showOfflineNotice() {
   let banner = document.getElementById('server-offline-banner');
-  if (show && !banner) {
-    banner = document.createElement('div');
-    banner.id = 'server-offline-banner';
-    banner.style.cssText = 'background:#1a1a2e;border:1px solid #ffd60033;border-radius:12px;padding:16px 20px;margin:0 0 20px;display:flex;align-items:flex-start;gap:12px;';
-    banner.innerHTML = `
-      <span style="font-size:1.5rem;line-height:1">ℹ️</span>
-      <div>
-        <strong style="color:#ffd600">Demo Mode</strong>
-        <p style="margin:4px 0 0;color:#aaa;font-size:0.9rem;line-height:1.5">
-          The inference server is not running. Predictions below use <strong style="color:#ccc">simulated probabilities</strong> for demonstration.<br>
-          For real predictions, run <code style="background:#0d0d1a;padding:2px 6px;border-radius:4px;color:#ffd600">python3 server.py</code> locally and open <code style="background:#0d0d1a;padding:2px 6px;border-radius:4px;color:#ffd600">index.html</code> from your machine.
-        </p>
-      </div>
-    `;
-    const container = document.querySelector('#section-predict .prediction-container');
-    if (container) container.prepend(banner);
-  }
-  if (!show && banner) banner.remove();
+  if (banner) return;
+  banner = document.createElement('div');
+  banner.id = 'server-offline-banner';
+  banner.style.cssText = 'background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #e74c3c55;border-radius:14px;padding:24px 28px;margin:0 0 24px;text-align:center;';
+  banner.innerHTML = `
+    <div style="font-size:2.5rem;margin-bottom:8px">🔒</div>
+    <strong style="color:#ff6b6b;font-size:1.15rem">Inference Server Offline</strong>
+    <p style="margin:10px 0 0;color:#aaa;font-size:0.95rem;line-height:1.6;max-width:520px;margin-left:auto;margin-right:auto">
+      Live predictions require the Flask backend running on your machine.<br>
+      To try it out, clone the repo and run:
+    </p>
+    <div style="margin:14px auto 0;display:inline-block;text-align:left">
+      <code style="display:block;background:#0d0d1a;padding:10px 16px;border-radius:8px;color:#ffd600;font-size:0.9rem;line-height:1.7">
+        git clone https://github.com/Kkt04/Robust-Medical-Vision.git<br>
+        cd Robust-Medical-Vision<br>
+        pip install -r requirements.txt<br>
+        python3 server.py
+      </code>
+    </div>
+    <p style="margin:14px 0 0;color:#666;font-size:0.8rem">Then open <strong style="color:#888">index.html</strong> from your local copy.</p>
+  `;
+  const container = document.querySelector('#section-predict .prediction-container');
+  if (container) container.prepend(banner);
+
+  // Hide upload and sample buttons when offline
+  const uploadSection = document.querySelector('#section-predict .upload-section');
+  if (uploadSection) uploadSection.style.display = 'none';
 }
 
 async function predictImage(imageSource) {
@@ -479,6 +586,12 @@ async function predictImage(imageSource) {
   if (resultSection) resultSection.style.display = 'none';
   
   const isOnline = await checkServer();
+
+  if (!isOnline) {
+    if (loading) loading.style.display = 'none';
+    showOfflineNotice();
+    return;
+  }
 
   try {
     let imageData;
@@ -494,60 +607,33 @@ async function predictImage(imageSource) {
       });
     }
 
-    let prediction;
+    const payload = { image: imageData };
+    const res = await fetch(`${API_URL}/predict`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Prediction failed');
+    const prediction = await res.json();
 
-    if (isOnline) {
-      showServerBanner(false);
-      const payload = { image: imageData };
-      const res = await fetch(`${API_URL}/predict`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error('Prediction failed');
-      prediction = await res.json();
-    } else {
-      showServerBanner(true);
-      prediction = generateMockPrediction();
-    }
-
-    displayPrediction(prediction, imageSource.startsWith('data:') ? imageSource : imageSource);
+    displayPrediction(prediction, imageSource);
   } catch (err) {
     console.error('Prediction error:', err);
-    showServerBanner(true);
-    const mockPred = generateMockPrediction();
-    displayPrediction(mockPred, imageSource);
+    showOfflineNotice();
+    return;
   }
   
   if (loading) loading.style.display = 'none';
   if (resultSection) resultSection.style.display = 'block';
 }
 
-function generateMockPrediction() {
-  const probs = [];
-  let total = 0;
-  for (let i = 0; i < 4; i++) {
-    const val = Math.random() * 0.5 + 0.2;
-    probs.push(val);
-    total += val;
-  }
-  probs.forEach((p, i) => probs[i] = p / total);
-  
-  const predIdx = probs.indexOf(Math.max(...probs));
-  const maxProb = probs[predIdx];
-  const entropy = -probs.reduce((sum, p) => sum + (p > 0 ? p * Math.log(p) : 0), 0);
-  const std = Math.sqrt(probs.reduce((sum, p) => sum + Math.pow(p - 1/4, 2), 0) / 4);
-  
-  return {
-    predictedClass: CLASSES[predIdx],
-    confidence: maxProb,
-    entropy: entropy,
-    std: std,
-    probabilities: probs
-  };
-}
+
 
 function displayPrediction(pred, imageSource) {
+  if (pred.is_mri === false) {
+    displayOODNotice(imageSource, pred.error || "Uploaded image is not a brain MRI scan.");
+    return;
+  }
   const preview = document.getElementById('preview-image');
   const predClass = document.getElementById('predicted-class');
   const confScore = document.getElementById('confidence-score');

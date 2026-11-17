@@ -245,9 +245,13 @@
     <!-- Prediction Section -->
     <section class="tab-section" id="section-predict" role="tabpanel" aria-labelledby="tab-predict">
       <div class="section-header">
-        <h2><span class="section-icon">🎯</span> Live Prediction</h2>
-        <p>Upload a brain MRI image to get a prediction with uncertainty estimation. The model will classify the scan
-          and provide a confidence score. Low-confidence predictions are flagged for expert review.</p>
+        <h2><span class="section-icon">🎯</span> Live Prediction & Uncertainty</h2>
+        <p>Test the model on axial/coronal brain MRI scans with MC-Dropout uncertainty estimation. Non-MRI images are automatically detected and rejected by Out-Of-Distribution (OOD) filters.</p>
+      </div>
+
+      <div class="finding-box" style="border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.08); margin-bottom: 24px;">
+        <span class="finding-icon">🛡️</span>
+        <p><strong>Medical Disclaimer & Modality Notice:</strong> This academic research prototype is exclusively designed and trained on <strong>grayscale brain MRI scans</strong>. It is not an FDA-approved diagnostic device. <strong>Do not upload general photos, selfies, or non-MRI pictures</strong>—the system will reject them as out-of-distribution.</p>
       </div>
 
       <div class="prediction-container">

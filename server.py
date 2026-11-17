@@ -109,6 +109,42 @@ def mc_predict(model, image_tensor, n_passes=20):
     return mean_probs, std_probs, entropy
 
 # -------------------------------
+# Out-of-Distribution (OOD) & Modality Check
+# -------------------------------
+def validate_mri_modality(pil_img: Image.Image) -> tuple[bool, str]:
+    """
+    Validates whether the input image has Brain MRI scan characteristics:
+    1. Color variance check: MRI scans are monochrome / grayscale.
+    2. Background margin check: MRI scans have dark perimeter margins.
+    """
+    arr = np.array(pil_img.convert("RGB"), dtype=np.float32)
+    
+    # 1. Color variance across R, G, B channels
+    channel_std = np.std(arr, axis=2).mean()
+    if channel_std > 8.0:
+        return False, (
+            "Detected color photograph. Brain MRI scans are grayscale scans. "
+            "This model is exclusively trained on brain MRI slices and cannot analyze personal photos."
+        )
+    
+    # 2. Check corners/perimeter (MRIs have dark corners from the scan bed/void)
+    h, w, _ = arr.shape
+    corner_size = max(4, min(h, w) // 10)
+    corners = [
+        arr[:corner_size, :corner_size],
+        arr[:corner_size, -corner_size:],
+        arr[-corner_size:, :corner_size],
+        arr[-corner_size:, -corner_size:],
+    ]
+    corner_mean = float(np.mean([c.mean() for c in corners]))
+    if corner_mean > 115.0:
+        return False, (
+            "Image background is too bright. Brain MRI scans have dark scanner field margins."
+        )
+
+    return True, "Valid MRI"
+
+# -------------------------------
 # Prediction Route
 # -------------------------------
 @app.route("/predict", methods=["POST"])
@@ -128,6 +164,21 @@ def predict():
         image_bytes = base64.b64decode(image_data)
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
+        # Modality check: verify this is an MRI scan, not a regular photo
+        is_mri, message = validate_mri_modality(image)
+        if not is_mri:
+            return jsonify(
+                {
+                    "is_mri": False,
+                    "error": message,
+                    "predictedClass": "Out of Distribution (Non-MRI)",
+                    "confidence": 0.0,
+                    "entropy": 1.386,
+                    "std": 0.0,
+                    "probabilities": [0.25, 0.25, 0.25, 0.25],
+                }
+            )
+
         image_tensor = transform(image)
 
         probs, std, entropy = mc_predict(
@@ -146,6 +197,7 @@ def predict():
 
         return jsonify(
             {
+                "is_mri": True,
                 "predictedClass": predicted_class,
                 "confidence": confidence,
                 "entropy": float(entropy),
